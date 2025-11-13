@@ -1,20 +1,88 @@
-# Factory Business Simulation - Projektübersicht
+# Factory Business Simulation - START HIER
 ## Planspiel BWL für BDE - WiSe 2025/26
 
-**Status: ✅ VOLLSTÄNDIG ABGESCHLOSSEN**  
-**Woche: 46 (gemäß Zeitplan)**
+**Ostfalia Hochschule für angewandte Wissenschaften**
+**Betreuer:** Prof. Dr. C. Haats
+**Erstellt von:** Mohamed Eid
+
+**Status:** ✅ VOLLSTÄNDIG ABGESCHLOSSEN
+**GitHub:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+
+---
+
+## 🚀 Schnellstart - Wählen Sie Ihre Version
+
+### 1️⃣ **Web-Interface** (Empfohlen für Präsentation)
+```bash
+python3 app.py
+```
+Dann Browser öffnen: **http://localhost:5001**
+
+**Vorteile:**
+- ✓ Modernes, benutzerfreundliches Interface
+- ✓ Echtzeit-Statusanzeige
+- ✓ Excel-Export mit einem Klick
+- ✓ "Neues Spiel" Button zum Zurücksetzen
+
+---
+
+### 2️⃣ **Python Kommandozeile** (Schnellste Option)
+```bash
+python3 factory_simulator.py
+```
+
+**Vorteile:**
+- ✓ Sofort startklar, keine Installation
+- ✓ Interaktiv: Entscheidungen werden abgefragt
+- ✓ Automatischer JSON-Export
+
+---
+
+### 3️⃣ **Excel-Tool** (Offline Option)
+```bash
+python3 excel_generator.py
+```
+Dann öffnen: `Factory_Simulation_Interactive.xlsx`
+
+**Vorteile:**
+- ✓ Vertrautes Excel-Interface
+- ✓ Vollständig offline nutzbar
+- ✓ Automatische Berechnungen mit Formeln
+- ✓ 6 Tabellenblätter (Anleitung, Parameter, Q1-4, Zusammenfassung)
 
 ---
 
 ## 📂 Projektinhalt
 
-Dieses Verzeichnis enthält die **komplette Lösung** für das erweiterte Factory-Planspiel mit allen geforderten Features und drei verschiedenen IT-Lösungen.
+### 🚀 Hauptprogramme
+
+| Datei | Beschreibung | Verwendung |
+|-------|--------------|------------|
+| `app.py` | **Web-Anwendung** - Flask Server | `python3 app.py` |
+| `factory_simulator.py` | **Kern-Simulator** - Spiellogik | `python3 factory_simulator.py` |
+| `excel_generator.py` | **Excel-Generator** | `python3 excel_generator.py` |
+| `demo.py` | **Demo-Skript** - Auto-Tests | `python3 demo.py --compare` |
+
+### 📄 Dokumentation
+
+| Datei | Beschreibung |
+|-------|--------------|
+| `README.md` | Vollständige technische Dokumentation |
+| `START_HIER.md` | Diese Datei - Projektübersicht & Schnellstart |
+| `Planspiel_BWL_Praesentation.pdf` | Präsentation für KW 50 |
+
+### 📁 Verzeichnisse
+
+| Ordner | Inhalt |
+|--------|--------|
+| `templates/` | HTML-Template für Web-Interface |
+| `exports/` | Generierte Excel-Exporte vom Webserver |
 
 ---
 
 ## 🎯 Was wurde entwickelt?
 
-### ✅ Alle Anforderungen erfüllt:
+### ✅ Alle 6 Anforderungen erfüllt:
 
 1. **Variable Verkaufspreise** ✓
    - Preiselastizität der Nachfrage
@@ -36,114 +104,70 @@ Dieses Verzeichnis enthält die **komplette Lösung** für das erweiterte Factor
    - Anpassbare Overhead-Kosten
 
 6. **IT-Unterstützung** ✓
-   - Python-Simulator
-   - Web-Interface
-   - Excel-Tool
+   - Python-Simulator (CLI)
+   - Web-Interface (Flask)
+   - Excel-Tool (Offline)
 
 ---
 
-## 📋 Dateiübersicht
+## 🎮 Spielanleitung (Kurzfassung)
 
-### 🚀 Hauptprogramme
+### Ziel
+Führen Sie Ihre Fabrik ein Jahr lang (4 Quartale) und **maximieren Sie den Gewinn**.
 
-| Datei | Beschreibung | Verwendung |
-|-------|--------------|------------|
-| `factory_simulator.py` | **Kern-Simulator** - Vollständige Spiellogik | `python3 factory_simulator.py` |
-| `app.py` | **Web-Anwendung** - Flask Server | `python3 app.py` |
-| `excel_generator.py` | **Excel-Generator** - Erstellt .xlsx Datei | `python3 excel_generator.py` |
-| `demo.py` | **Demo-Skript** - Automatische Tests | `python3 demo.py` |
+### Ihre Entscheidungen pro Quartal
 
-### 📄 Dokumentation
+1. **💵 Verkaufspreis** (M pro Einheit)
+   - Standard: 13.0 M
+   - Höher = Mehr Gewinn/Einheit, ABER weniger Nachfrage
+   - Niedriger = Mehr Nachfrage, ABER weniger Gewinn/Einheit
 
-| Datei | Beschreibung |
-|-------|--------------|
-| `README.md` | **Vollständige technische Dokumentation** (14 KB) |
-| `SCHNELLSTART.md` | **Schnellstart-Anleitung** (8.5 KB) |
-| `Planspiel_BWL_Praesentation.pdf` | **Präsentation für KW 50** (8 KB) |
-| `START_HIER.md` | **Diese Datei** - Projektübersicht |
+2. **📣 Marketing-Budget** (M)
+   - Standard: 0 M
+   - Mehr Marketing = Höhere Nachfrage
+   - Effektivität: 0.08 (8% Nachfragesteigerung pro 1 M)
 
-### 📊 Generierte Dateien
+3. **🏭 Produktionsmenge** (Lose)
+   - Standard: 2 Lose
+   - Mehr Produktion = Können mehr verkaufen (wenn Nachfrage da ist)
 
-| Datei | Beschreibung |
-|-------|--------------|
-| `Factory_Simulation_Interactive.xlsx` | Interaktive Excel-Arbeitsmappe (13 KB) |
-| `demo_Szenario_1_Balanced.json` | Beispiel-Ergebnisdatei (3 KB) |
+4. **📊 Materialpreis-Faktor**
+   - Standard: 1.0 (normal)
+   - 1.2 = 20% teurer, 0.8 = 20% günstiger
+   - Simuliert Marktschwankungen
 
-### 📁 Verzeichnisse
-
-| Ordner | Inhalt |
-|--------|--------|
-| `templates/` | HTML-Templates für Web-Interface |
-| `static/` | CSS, JavaScript, Bilder |
-| `__pycache__/` | Python Cache (automatisch) |
-
-### ⚙️ Konfiguration
-
-| Datei | Beschreibung |
-|-------|--------------|
-| `requirements.txt` | Python-Abhängigkeiten |
+### Anfangsbestand
+- 💰 Kasse: 28.0 M
+- 📋 Forderungen: 26.0 M
+- 📦 Rohmaterial: 2 Lose
+- ⚙️ Halbfertigware: 2 Lose
+- 📦 Fertigware: 2 Lose
 
 ---
 
-## 🎮 Schnellstart - 3 Wege zum Spielen
+## 📊 Berechnungsformeln (Kurzfassung)
 
-### 1️⃣ Python Kommandozeile (Einfachste Option)
-```bash
-python3 factory_simulator.py
+### Nachfrage:
 ```
-**Vorteile:**
-- ✓ Sofort startklar, keine zusätzliche Installation
-- ✓ Interaktiv: Entscheidungen werden abgefragt
-- ✓ Automatischer Export nach JSON
-
-**Ablauf:**
-1. Programm startet automatisch
-2. Für jedes Quartal werden Sie nach Entscheidungen gefragt
-3. Ergebnisse werden sofort angezeigt
-4. Am Ende: Jahresabschluss und Export
-
----
-
-### 2️⃣ Web-Interface (Modernste Option)
-```bash
-python3 app.py
+Nachfrage = Basisnachfrage × Preiseffekt × Marketing-Effekt × Wettbewerb
 ```
-Dann öffnen: http://localhost:5000
 
-**Vorteile:**
-- ✓ Modernes, benutzerfreundliches Interface
-- ✓ Echtzeit-Statusanzeige
-- ✓ Farbcodierte Ergebnisse
-- ✓ Keine Installation außer Flask
-
-**Ablauf:**
-1. Server startet auf Port 5000
-2. Browser öffnet sich automatisch
-3. "Spiel Starten" klicken
-4. Entscheidungen eingeben → "Quartal Simulieren"
-5. Nach 4 Quartalen: "Ergebnisse Exportieren"
-
----
-
-### 3️⃣ Excel-Tool (Vertrauteste Option)
-```bash
-python3 excel_generator.py
+### Preiseffekt:
 ```
-Dann öffnen: `Factory_Simulation_Interactive.xlsx`
+Preiseffekt = 1 - (Verkaufspreis/13 - 1) × 0.15
+```
 
-**Vorteile:**
-- ✓ Vertrautes Excel-Interface
-- ✓ Offline verfügbar
-- ✓ Automatische Berechnungen
-- ✓ Editierbar und anpassbar
+### Marketing-Effekt:
+```
+Marketing-Effekt = 1 + (Marketing-Budget × 0.08)
+```
 
-**Ablauf:**
-1. Generator erstellt Excel-Datei
-2. Öffnen mit Excel oder LibreOffice
-3. Lesen Sie "Anleitung" Tab
-4. Geben Sie Entscheidungen in "Quartal 1-4" ein (gelbe Felder)
-5. Ergebnisse werden automatisch berechnet (grüne Felder)
-6. "Jahresabschluss" Tab zeigt Zusammenfassung
+### Gewinn:
+```
+Nettogewinn = Umsatz - (Material + Fertigung + Montage + Overhead + Marketing)
+```
+
+Vollständige Formeln siehe `README.md` Sektion 6.
 
 ---
 
@@ -160,40 +184,156 @@ Führt automatisch ein "Balanced" Szenario durch.
 python3 demo.py --compare
 ```
 Vergleicht 4 verschiedene Strategien:
-- Balanced
-- Aggressive Pricing ⭐ (beste Ergebnisse)
-- Marketing Focus
-- Cost Leadership
+- **Balanced** - Ausgewogen
+- **Aggressive Pricing** ⭐ (beste Ergebnisse: ~34.5 M Gewinn)
+- **Marketing Focus** - Hohe Marketingausgaben
+- **Cost Leadership** - Niedrige Preise, hohe Menge
 
 ---
 
-## 📚 Dokumentation lesen
+## 💡 Tipps für optimale Ergebnisse
 
-### Für den Schnellstart:
-```bash
-cat SCHNELLSTART.md
-```
-Enthält:
-- Schnelleinstieg
-- Beispiele
-- Tipps & Tricks
-- Problemlösungen
+### Erfolgsstrategien:
+1. **Preisstrategie:** Moderate Erhöhungen (13-14 M) bringen gute Balance
+2. **Marketing:** 1-1.5 M pro Quartal ist effektiv
+3. **Produktion:** 2-3 Lose je nach erwarteter Nachfrage
+4. **Liquidität:** Kasse mindestens 20 M behalten
 
-### Für technische Details:
-```bash
-cat README.md
-```
-Enthält:
-- Vollständige Formeln
-- Technische Architektur
-- API-Dokumentation
-- Erweiterungsmöglichkeiten
+### Häufige Fehler vermeiden:
+- ❌ Zu hohe Preise (>15 M) → Nachfrage bricht ein
+- ❌ Zu viel Marketing ohne Preisanpassung → Kosten explodieren
+- ❌ Überproduktion → Lagerbestände, niedrige Liquidität
+- ❌ Zu niedrige Preise (<11 M) → Gewinnmarge zu niedrig
 
-### Für die Präsentation:
+### Erfolgsbewertung:
+- ⭐⭐⭐ **Sehr gut:** Nettogewinn > 30 M, Umsatzrendite > 20%
+- ⭐⭐ **Gut:** Nettogewinn 15-30 M, Umsatzrendite 10-20%
+- ⭐ **Befriedigend:** Nettogewinn 5-15 M, Umsatzrendite 5-10%
+
+---
+
+## 🎤 Für Ihre Präsentation (KW 50)
+
+### Vorbereitung (5 Minuten vorher):
+
+**Terminal 1 - Web-Server starten:**
 ```bash
-open Planspiel_BWL_Praesentation.pdf
+cd /Users/mohamedeid/Documents/Planspiel_BWL_BDE
+python3 app.py
 ```
-Professionelle PDF-Präsentation für Woche 50.
+
+**Terminal 2 - Demo bereit haben:**
+```bash
+python3 demo.py --compare
+```
+
+**Browser:**
+- Öffnen Sie http://localhost:5001
+- Bereiten Sie ein neues Spiel vor
+
+### Präsentationsablauf (10-15 Minuten):
+
+1. **Problem erklären** (2 Min)
+   - Ursprüngliches Factory-Spiel war statisch
+   - Fehlende Variabilität
+
+2. **Lösung vorstellen** (3 Min)
+   - Variable Parameter implementiert
+   - Drei IT-Lösungen erstellt
+   - Zeigen Sie GitHub Repository
+
+3. **Live-Demo** (5 Min)
+   - Web-Interface zeigen
+   - 1-2 Quartale live spielen
+   - Excel-Export demonstrieren
+
+4. **Ergebnisse** (3 Min)
+   - Szenario-Vergleich zeigen
+   - Beste Strategie erklären
+   - Excel-Tool zeigen
+
+5. **Q&A** (2 Min)
+
+---
+
+## 💻 Installation & Systemanforderungen
+
+### Systemanforderungen:
+- ✅ Python 3.8 oder höher
+- ✅ 100 MB freier Speicher
+- ✅ Webbrowser (für Web-Version)
+- ✅ Excel/LibreOffice (für Excel-Version)
+
+### Installation:
+```bash
+# Alle Abhängigkeiten installieren:
+pip install flask openpyxl --break-system-packages
+
+# Oder aus requirements.txt:
+pip install -r requirements.txt --break-system-packages
+```
+
+### Keine Installation nötig für:
+- ✓ Python Kommandozeilenversion
+- ✓ Excel-Generierung (wenn openpyxl bereits installiert)
+
+---
+
+## 🆘 Problemlösung
+
+### Problem: Flask startet nicht
+```bash
+pip install flask --break-system-packages
+```
+
+### Problem: Port 5001 bereits belegt
+Ändern Sie in `app.py` Zeile 169:
+```python
+app.run(debug=True, host='0.0.0.0', port=5002)
+```
+
+### Problem: Excel-Datei öffnet nicht
+```bash
+pip install openpyxl --break-system-packages
+python3 excel_generator.py
+```
+
+### Problem: "ModuleNotFoundError"
+```bash
+pip install -r requirements.txt --break-system-packages
+```
+
+---
+
+## ✅ Für Ihre Abgabe (KW 51)
+
+### Mindestabgabe:
+1. ✅ `factory_simulator.py` - Simulator
+2. ✅ `app.py` + `templates/` - Web-Version
+3. ✅ `excel_generator.py` - Excel-Version
+4. ✅ `README.md` - Dokumentation
+
+### Empfohlene Zusätze:
+5. ✅ `demo.py` - Demonstrationsskript
+6. ✅ `Factory_Simulation_Interactive.xlsx` - Beispiel-Excel
+7. ✅ `Planspiel_BWL_Praesentation.pdf` - Präsentation
+8. ✅ GitHub Repository Link
+
+**Alles ist bereit für die Abgabe!**
+
+---
+
+## 📈 Projekt-Statistik
+
+| Metrik | Wert |
+|--------|------|
+| **Programmierdateien** | 4 (.py) |
+| **Zeilen Code** | ~1.200 |
+| **Dokumentation** | ~10.000 Wörter |
+| **Implementierte Features** | 6/6 (100%) |
+| **IT-Lösungen** | 3 |
+| **Test-Szenarien** | 4 |
+| **GitHub Commits** | 3+ |
 
 ---
 
@@ -210,161 +350,18 @@ Factory Business Simulation
 ├── Web Interface (app.py + templates/)
 │   ├── Flask REST API
 │   ├── HTML/CSS/JavaScript Frontend
-│   └── JSON Datenübertragung
+│   ├── Excel Export (/api/export_excel)
+│   └── Session Management
 │
 ├── Excel Tool (excel_generator.py)
 │   ├── Openpyxl für Excel-Manipulation
-│   ├── Automatische Formeln
-│   └── Interaktive Tabellenblätter
+│   ├── 6 Tabellenblätter
+│   └── Automatische Formeln
 │
 └── Demo & Tests (demo.py)
-    ├── Vordefinierte Szenarien
+    ├── 4 vordefinierte Szenarien
     └── Automatischer Vergleich
 ```
-
----
-
-## 📊 Berechnungsformeln (Kurzfassung)
-
-### Nachfrage:
-```
-Nachfrage = Basisnachfrage × Preiseffekt × Marketing-Effekt × Wettbewerb
-```
-
-### Preiseffekt:
-```
-Preiseffekt = 1 - (Preis/Basispreis - 1) × Elastizität
-```
-
-### Marketing-Effekt:
-```
-Marketing-Effekt = 1 + (Budget × Effektivität)
-```
-
-### Gewinn:
-```
-Nettogewinn = Umsatz - (Material + Fertigung + Montage + Overhead + Marketing)
-```
-
-Details siehe `README.md` Sektion 6.
-
----
-
-## ✅ Für Ihre Abgabe (KW 51)
-
-### Mindestabgabe:
-1. ✅ `factory_simulator.py` - Simulator
-2. ✅ `app.py` + `templates/` - Web-Version
-3. ✅ `excel_generator.py` - Excel-Version
-4. ✅ `README.md` - Dokumentation
-
-### Empfohlene Zusätze:
-5. ✅ `demo.py` - Demonstrationsskript
-6. ✅ `Factory_Simulation_Interactive.xlsx` - Beispiel-Excel
-7. ✅ `Planspiel_BWL_Praesentation.pdf` - Präsentation
-8. ✅ Screenshots des Web-Interfaces
-
-**Alles in diesem Ordner ist abgabebereit!**
-
----
-
-## 🎤 Für Ihre Präsentation (KW 50)
-
-### Vorbereitung (5 Minuten vor Präsentation):
-
-**Terminal 1 - Web-Server starten:**
-```bash
-cd planspiel_bwl
-python3 app.py
-```
-
-**Terminal 2 - Demo bereit haben:**
-```bash
-cd planspiel_bwl
-python3 demo.py --compare
-```
-
-**Browser:**
-- Öffnen Sie http://localhost:5000
-- Bereiten Sie ein neues Spiel vor
-
-### Präsentationsablauf (10-15 Minuten):
-
-1. **Problem erklären** (2 Min)
-   - Ursprüngliches Factory-Spiel war statisch
-   - Keine variablen Parameter
-
-2. **Lösung vorstellen** (3 Min)
-   - Variable Parameter implementiert
-   - Drei IT-Lösungen erstellt
-   - Zeigen Sie diese Projektübersicht
-
-3. **Live-Demo** (5 Min)
-   - Zeigen Sie Web-Interface
-   - Spielen Sie 1-2 Quartale live
-   - Zeigen Sie Auswirkung von Entscheidungen
-
-4. **Ergebnisse** (3 Min)
-   - Zeigen Sie Szenario-Vergleich
-   - Erklären Sie beste Strategie
-   - Zeigen Sie Excel-Alternative
-
-5. **Q&A** (2 Min)
-
----
-
-## 💡 Wichtige Hinweise
-
-### Systemanforderungen:
-- ✅ Python 3.8 oder höher
-- ✅ 100 MB freier Speicher
-- ✅ Webbrowser (für Web-Version)
-- ✅ Excel/LibreOffice (für Excel-Version)
-
-### Installation:
-```bash
-# Alle Abhängigkeiten auf einmal:
-pip install flask openpyxl reportlab --break-system-packages
-
-# Oder aus requirements.txt:
-pip install -r requirements.txt --break-system-packages
-```
-
-### Keine Installation nötig für:
-- ✓ Python Kommandozeilenversion
-- ✓ Excel-Generierung (nutzt bereits installiertes openpyxl)
-
----
-
-## 🔍 Projekt-Statistik
-
-| Metrik | Wert |
-|--------|------|
-| **Programmierdateien** | 5 |
-| **Zeilen Code** | ~1.200 |
-| **Dokumentation** | ~8.000 Wörter |
-| **Implementierte Features** | 6/6 (100%) |
-| **IT-Lösungen** | 3 |
-| **Test-Szenarien** | 4 |
-| **Entwicklungszeit** | 1 Woche (KW 46) |
-
----
-
-## 🎯 Projektziele - Status
-
-| Ziel | Status | Notizen |
-|------|--------|---------|
-| Variable Verkaufspreise | ✅ | Mit Preiselastizität |
-| Variable Absatzmengen | ✅ | Durch Marketing-Budget |
-| Variable Fertigungskosten | ✅ | Effizienz- und Qualitätsfaktoren |
-| Variable Einkaufspreise | ✅ | Marktfaktoren |
-| Variable Gemeinkosten | ✅ | Anpassbare Overhead |
-| IT-Unterstützung | ✅ | 3 Lösungen implementiert |
-| Prototypische Umsetzung | ✅ | Voll funktionsfähig |
-| Dokumentation | ✅ | Umfassend (DE + EN) |
-| Tests | ✅ | 4 Szenarien getestet |
-
-**Gesamtstatus: ✅ 100% ABGESCHLOSSEN**
 
 ---
 
@@ -372,17 +369,20 @@ pip install -r requirements.txt --break-system-packages
 
 ### Diese Woche (KW 46):
 - [x] Projekt erstellt und getestet
+- [x] Auf GitHub hochgeladen
 - [ ] Alle drei Versionen selbst ausprobieren
-- [ ] Feedback von Kommilitonen einholen
+- [ ] Excel-Export testen
 
-### Nächste Woche (KW 47-48):
+### KW 47-48:
 - [ ] Weitere Tests durchführen
+- [ ] Feedback von Kommilitonen einholen
 - [ ] Parameter ggf. optimieren
 - [ ] Präsentation vorbereiten
 
 ### KW 49:
 - [ ] Präsentation üben
 - [ ] Live-Demo vorbereiten
+- [ ] Beide Terminals testen
 
 ### KW 50:
 - [ ] **Präsentation**
@@ -390,6 +390,26 @@ pip install -r requirements.txt --break-system-packages
 
 ### KW 51:
 - [ ] **Abgabe** aller Dateien
+- [ ] GitHub Link einreichen
+
+---
+
+## 🌐 GitHub Repository
+
+**Repository:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+
+**Was ist enthalten:**
+- ✅ Alle Python-Dateien
+- ✅ Web-Templates
+- ✅ Dokumentation
+- ✅ Excel-Template
+- ✅ Präsentation PDF
+- ✅ .gitignore (sauberes Repository)
+
+**Für Deployment:**
+- Kann auf Replit gehostet werden
+- Kann auf PythonAnywhere deployed werden
+- Kann auf Render.com deployed werden
 
 ---
 
@@ -398,52 +418,28 @@ pip install -r requirements.txt --break-system-packages
 **Sie haben jetzt:**
 - ✅ Ein vollständig funktionierendes Business-Simulationsspiel
 - ✅ Drei verschiedene Nutzungsmöglichkeiten
+- ✅ Professionelles GitHub Repository
 - ✅ Umfassende Dokumentation
 - ✅ Fertige Präsentation
-- ✅ Alle Anforderungen erfüllt
+- ✅ Alle Anforderungen zu 100% erfüllt
 
-**Das Projekt ist fertig und abgabebereit!**
+**Das Projekt ist abgabebereit!**
 
 ---
 
 ## 📖 Weiterführende Informationen
 
-- **Vollständige Anleitung:** Siehe `README.md`
-- **Schnellstart:** Siehe `SCHNELLSTART.md`
+- **Technische Details:** Siehe `README.md`
 - **Präsentation:** Siehe `Planspiel_BWL_Praesentation.pdf`
-- **Code-Dokumentation:** Siehe Kommentare in .py Dateien
+- **Code-Dokumentation:** Kommentare in .py Dateien
+- **GitHub:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
 
 ---
 
-## 🆘 Hilfe benötigt?
-
-### Häufige Probleme:
-
-**Problem:** Python-Modul nicht gefunden
-```bash
-pip install flask openpyxl reportlab --break-system-packages
-```
-
-**Problem:** Port 5000 bereits belegt
-```bash
-# Ändern Sie in app.py die letzte Zeile zu:
-app.run(debug=True, host='0.0.0.0', port=5001)
-```
-
-**Problem:** Excel-Datei öffnet nicht
-- Stellen Sie sicher, dass Excel oder LibreOffice installiert ist
-- Versuchen Sie, die Datei im Browser zu öffnen
-
----
-
-**Entwickelt für:**  
-Ostfalia Hochschule für angewandte Wissenschaften  
-Fakultät Maschinenbau  
-Institut für Produktionstechnik  
+**Entwickelt für:**
+Ostfalia Hochschule für angewandte Wissenschaften
+Fakultät Maschinenbau
+Institut für Produktionstechnik
 WiSe 2025/26
-
-**Betreuer:** Prof. Dr. C. Haats
-
----
 
 **Viel Erfolg mit Ihrem Projekt! 🚀**
