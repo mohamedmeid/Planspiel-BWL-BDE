@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Business Simulation - Planspiel BWL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.1em;
+        }
+        
+        .game-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section-title {
+            color: #2d3748;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .status-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            color: #2d3748;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-reset {
+            background: #f56565;
+        }
+
+        .btn-reset:hover {
+            background: #e53e3e;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .results-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .results-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .results-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .positive {
+            color: #38a169;
+            font-weight: 600;
+        }
+        
+        .negative {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+        
+        .alert-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #3182ce;
+        }
+        
+        #quarter-display {
+            text-align: center;
+            font-size: 2em;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏭 Factory Business Simulation</h1>
+            <p class="subtitle">Planspiel BWL für BDE - WiSe 2025/26</p>
+            <p class="subtitle">Ostfalia Hochschule für angewandte Wissenschaften</p>
+            <p class="subtitle" style="margin-top: 10px; font-weight: 600; color: #4a5568;">Betreuer: Prof. Dr. C. Haats</p>
+            <p class="subtitle" style="margin-top: 5px; font-weight: 600; color: #667eea;">Erstellt von: Mohamed Eid</p>
+        </header>
+
+        <div class="game-section">
+            <h2 class="section-title">Spielstatus</h2>
+            <div id="quarter-display">Quartal: <span id="current-quarter">0</span> / 4</div>
+            
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-label">💰 Kasse</div>
+                    <div class="status-value"><span id="cash">28.0</span> M</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">📋 Forderungen</div>
+                    <div class="status-value"><span id="receivables">26.0</span> M</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">📦 Rohmaterial</div>
+                    <div class="status-value"><span id="raw-material">2</span> Lose</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">⚙️ Halbfertig</div>
+                    <div class="status-value"><span id="wip">2</span> Lose</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-label">📦 Fertigware</div>
+                    <div class="status-value"><span id="finished-goods">2</span> Lose</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-section" id="decision-section">
+            <h2 class="section-title">Ihre Entscheidungen</h2>
+            
+            <div class="decision-grid">
+                <div class="input-group">
+                    <label for="sales-price">💵 Verkaufspreis (M pro Einheit)</label>
+                    <input type="number" id="sales-price" value="13.0" step="0.5" min="1">
+                    <small style="color: #718096;">Standard: 13.0 M</small>
+                </div>
+                
+                <div class="input-group">
+                    <label for="marketing-budget">📣 Marketing-Budget (M)</label>
+                    <input type="number" id="marketing-budget" value="0" step="0.5" min="0">
+                    <small style="color: #718096;">Erhöht die Nachfrage</small>
+                </div>
+                
+                <div class="input-group">
+                    <label for="production-lots">🏭 Produktionsmenge (Lose)</label>
+                    <input type="number" id="production-lots" value="2" step="1" min="1" max="5">
+                    <small style="color: #718096;">Standard: 2 Lose</small>
+                </div>
+                
+                <div class="input-group">
+                    <label for="material-factor">📊 Materialpreis-Faktor</label>
+                    <input type="number" id="material-factor" value="1.0" step="0.1" min="0.5" max="2.0">
+                    <small style="color: #718096;">1.0 = normal, 1.2 = +20%</small>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" id="start-btn" onclick="startGame()">🎮 Spiel Starten</button>
+                <button class="btn" id="simulate-btn" onclick="simulateQuarter()" style="display:none;">▶️ Quartal Simulieren</button>
+                <button class="btn btn-secondary" id="export-btn" onclick="exportResults()" style="display:none; margin-left: 10px;">📥 Ergebnisse Exportieren</button>
+                <button class="btn btn-reset" id="new-game-btn" onclick="resetGame()" style="display:none; margin-left: 10px;">🔄 Neues Spiel</button>
+            </div>
+        </div>
+
+        <div class="game-section" id="results-section" style="display:none;">
+            <h2 class="section-title">Quartalsergebnisse</h2>
+            <div id="quarter-results"></div>
+        </div>
+
+        <div class="game-section" id="summary-section" style="display:none;">
+            <h2 class="section-title">Jahresabschluss</h2>
+            <div id="summary-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let gameId = 'game_' + Date.now();
+        let currentQuarter = 0;
+        let allResults = [];
+
+        async function startGame() {
+            const response = await fetch('/api/start_game', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({game_id: gameId})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('simulate-btn').style.display = 'inline-block';
+                updateStatus(data.initial_state);
+                showAlert('Spiel gestartet! Treffen Sie Ihre Entscheidungen für Quartal 1.', 'success');
+            }
+        }
+
+        async function simulateQuarter() {
+            if (currentQuarter >= 4) {
+                showAlert('Spiel beendet! Alle 4 Quartale wurden gespielt.', 'info');
+                return;
+            }
+
+            const salesPrice = parseFloat(document.getElementById('sales-price').value);
+            const marketingBudget = parseFloat(document.getElementById('marketing-budget').value);
+            const productionLots = parseInt(document.getElementById('production-lots').value);
+            const materialFactor = parseFloat(document.getElementById('material-factor').value);
+
+            const response = await fetch('/api/simulate_quarter', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    game_id: gameId,
+                    sales_price: salesPrice,
+                    marketing_budget: marketingBudget,
+                    production_lots: productionLots,
+                    material_market_factor: materialFactor
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                currentQuarter++;
+                document.getElementById('current-quarter').textContent = currentQuarter;
+                allResults.push(data.result);
+                
+                updateStatus(data.current_state);
+                displayQuarterResult(data.result);
+                document.getElementById('results-section').style.display = 'block';
+
+                if (currentQuarter >= 4) {
+                    document.getElementById('simulate-btn').disabled = true;
+                    document.getElementById('export-btn').style.display = 'inline-block';
+                    await showSummary();
+                }
+            }
+        }
+
+        function updateStatus(state) {
+            document.getElementById('cash').textContent = state.cash.toFixed(2);
+            document.getElementById('receivables').textContent = state.accounts_receivable.toFixed(2);
+            document.getElementById('raw-material').textContent = state.raw_material_inventory;
+            document.getElementById('wip').textContent = state.work_in_progress;
+            document.getElementById('finished-goods').textContent = state.finished_goods_inventory;
+        }
+
+        function displayQuarterResult(result) {
+            const resultsDiv = document.getElementById('quarter-results');
+            
+            const profitClass = result.net_profit >= 0 ? 'positive' : 'negative';
+            
+            const resultHTML = `
+                <div style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Quartal ${result.quarter}</h3>
+                    <table class="results-table">
+                        <tr>
+                            <td><strong>Verkaufspreis</strong></td>
+                            <td>${result.sales_price.toFixed(2)} M/Einheit</td>
+                            <td><strong>Absatzmenge</strong></td>
+                            <td>${result.sales_volume} Lose</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Umsatz</strong></td>
+                            <td class="positive">${result.sales_revenue.toFixed(2)} M</td>
+                            <td><strong>Gesamtkosten</strong></td>
+                            <td class="negative">${result.total_cost.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nettogewinn</strong></td>
+                            <td class="${profitClass}" colspan="3">${result.net_profit.toFixed(2)} M</td>
+                        </tr>
+                    </table>
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; color: #667eea; font-weight: 600;">Detaillierte Kostenaufstellung</summary>
+                        <div style="margin-top: 10px; padding: 10px; background: #f7fafc; border-radius: 5px;">
+                            <p>Materialkosten: ${result.material_cost.toFixed(2)} M</p>
+                            <p>Fertigungskosten: ${result.production_cost.toFixed(2)} M</p>
+                            <p>Montagekosten: ${result.assembly_cost.toFixed(2)} M</p>
+                            <p>Gemeinkosten: ${result.overhead_cost.toFixed(2)} M</p>
+                            <p>Marketingkosten: ${result.marketing_cost.toFixed(2)} M</p>
+                        </div>
+                    </details>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML += resultHTML;
+        }
+
+        async function showSummary() {
+            const response = await fetch(`/api/get_summary?game_id=${gameId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const summaryDiv = document.getElementById('summary-content');
+                const summary = data.summary;
+                
+                const summaryHTML = `
+                    <div class="alert alert-success">
+                        <h3>🎉 Herzlichen Glückwunsch! Sie haben das Spiel abgeschlossen.</h3>
+                    </div>
+                    <table class="results-table">
+                        <tr>
+                            <td><strong>Gesamtumsatz</strong></td>
+                            <td class="positive">${summary.total_revenue.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gesamtkosten</strong></td>
+                            <td class="negative">${summary.total_cost.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gesamtgewinn</strong></td>
+                            <td class="${summary.total_profit >= 0 ? 'positive' : 'negative'}">${summary.total_profit.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Durchschnittlicher Gewinn pro Quartal</strong></td>
+                            <td>${summary.average_profit_per_quarter.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Endbestand Kasse</strong></td>
+                            <td class="positive">${summary.final_cash.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Umsatzrendite</strong></td>
+                            <td>${summary.return_on_sales.toFixed(2)}%</td>
+                        </tr>
+                    </table>
+                `;
+                
+                summaryDiv.innerHTML = summaryHTML;
+                document.getElementById('summary-section').style.display = 'block';
+            }
+        }
+
+        async function exportResults() {
+            // Export as Excel file
+            const url = `/api/export_excel?game_id=${gameId}`;
+
+            // Create a temporary link and click it to download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Factory_Ergebnisse.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showAlert('Excel-Datei wird heruntergeladen...', 'success');
+
+            // Show new game button
+            setTimeout(() => {
+                document.getElementById('export-btn').style.display = 'none';
+                document.getElementById('new-game-btn').style.display = 'inline-block';
+            }, 500);
+        }
+
+        function resetGame() {
+            // Generate new game ID
+            gameId = 'game_' + Date.now();
+            currentQuarter = 0;
+            allResults = [];
+
+            // Reset status display
+            document.getElementById('current-quarter').textContent = '0';
+            document.getElementById('cash').textContent = '28.0';
+            document.getElementById('receivables').textContent = '26.0';
+            document.getElementById('raw-material').textContent = '2';
+            document.getElementById('wip').textContent = '2';
+            document.getElementById('finished-goods').textContent = '2';
+
+            // Reset input fields
+            document.getElementById('sales-price').value = '13.0';
+            document.getElementById('marketing-budget').value = '0';
+            document.getElementById('production-lots').value = '2';
+            document.getElementById('material-factor').value = '1.0';
+
+            // Clear results
+            document.getElementById('quarter-results').innerHTML = '';
+            document.getElementById('summary-content').innerHTML = '';
+
+            // Hide/show appropriate sections and buttons
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('summary-section').style.display = 'none';
+            document.getElementById('start-btn').style.display = 'inline-block';
+            document.getElementById('simulate-btn').style.display = 'none';
+            document.getElementById('simulate-btn').disabled = false;
+            document.getElementById('export-btn').style.display = 'none';
+            document.getElementById('new-game-btn').style.display = 'none';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            showAlert('Bereit für ein neues Spiel! Klicken Sie auf "Spiel Starten".', 'info');
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild.nextSibling);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    </script>
+</body>
+</html>
