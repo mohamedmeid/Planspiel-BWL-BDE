@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factory Business Simulation - Planspiel BWL</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -198,6 +199,23 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .chart-title {
+            text-align: center;
+            color: #2d3748;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
         
         .decision-grid {
@@ -317,12 +335,336 @@
             <h2 class="section-title">Jahresabschluss</h2>
             <div id="summary-content"></div>
         </div>
+
+        <div class="game-section" id="charts-section" style="display:none;">
+            <h2 class="section-title">📊 Grafische Auswertungen</h2>
+
+            <div class="chart-grid">
+                <div>
+                    <h3 class="chart-title">💰 Gewinnentwicklung über Quartale</h3>
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="chart-title">📈 Umsatz vs. Kosten</h3>
+                    <div class="chart-container">
+                        <canvas id="revenueVsCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div>
+                    <h3 class="chart-title">🥧 Kostenverteilung</h3>
+                    <div class="chart-container">
+                        <canvas id="costBreakdownChart"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="chart-title">💵 Kassenbestand</h3>
+                    <div class="chart-container">
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div>
+                    <h3 class="chart-title">📦 Absatzmenge über Quartale</h3>
+                    <div class="chart-container">
+                        <canvas id="salesVolumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         let gameId = 'game_' + Date.now();
         let currentQuarter = 0;
         let allResults = [];
+        let charts = {
+            profit: null,
+            revenueVsCost: null,
+            costBreakdown: null,
+            cashFlow: null,
+            salesVolume: null
+        };
+
+        function createCharts() {
+            if (!allResults || allResults.length === 0) return;
+
+            // Destroy existing charts if they exist
+            Object.keys(charts).forEach(key => {
+                if (charts[key]) {
+                    charts[key].destroy();
+                    charts[key] = null;
+                }
+            });
+
+            const quarters = allResults.map(r => `Q${r.quarter}`);
+
+            // 1. Profit Trend Chart (Line Chart)
+            const profitCtx = document.getElementById('profitChart').getContext('2d');
+            const profitData = allResults.map(r => r.net_profit);
+            charts.profit = new Chart(profitCtx, {
+                type: 'line',
+                data: {
+                    labels: quarters,
+                    datasets: [{
+                        label: 'Nettogewinn (M)',
+                        data: profitData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' M';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Revenue vs Cost Chart (Grouped Bar Chart)
+            const revenueVsCostCtx = document.getElementById('revenueVsCostChart').getContext('2d');
+            const revenueData = allResults.map(r => r.sales_revenue);
+            const costData = allResults.map(r => r.total_cost);
+            charts.revenueVsCost = new Chart(revenueVsCostCtx, {
+                type: 'bar',
+                data: {
+                    labels: quarters,
+                    datasets: [
+                        {
+                            label: 'Umsatz',
+                            data: revenueData,
+                            backgroundColor: 'rgba(72, 187, 120, 0.8)',
+                            borderColor: '#48bb78',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Kosten',
+                            data: costData,
+                            backgroundColor: 'rgba(245, 101, 101, 0.8)',
+                            borderColor: '#f56565',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' M';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. Cost Breakdown Chart (Pie Chart) - Total costs across all quarters
+            const costBreakdownCtx = document.getElementById('costBreakdownChart').getContext('2d');
+            const totalMaterialCost = allResults.reduce((sum, r) => sum + r.material_cost, 0);
+            const totalProductionCost = allResults.reduce((sum, r) => sum + r.production_cost, 0);
+            const totalAssemblyCost = allResults.reduce((sum, r) => sum + r.assembly_cost, 0);
+            const totalOverheadCost = allResults.reduce((sum, r) => sum + r.overhead_cost, 0);
+            const totalMarketingCost = allResults.reduce((sum, r) => sum + r.marketing_cost, 0);
+
+            charts.costBreakdown = new Chart(costBreakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Material', 'Fertigung', 'Montage', 'Gemeinkosten', 'Marketing'],
+                    datasets: [{
+                        data: [totalMaterialCost, totalProductionCost, totalAssemblyCost, totalOverheadCost, totalMarketingCost],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value.toFixed(2) + ' M (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 4. Cash Flow Chart (Area Chart)
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            const cashData = allResults.map(r => r.cash_ending);
+            charts.cashFlow = new Chart(cashFlowCtx, {
+                type: 'line',
+                data: {
+                    labels: quarters,
+                    datasets: [{
+                        label: 'Kassenbestand (M)',
+                        data: cashData,
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#48bb78',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' M';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 5. Sales Volume Chart (Line Chart)
+            const salesVolumeCtx = document.getElementById('salesVolumeChart').getContext('2d');
+            const salesVolumeData = allResults.map(r => r.sales_volume);
+            charts.salesVolume = new Chart(salesVolumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: quarters,
+                    datasets: [{
+                        label: 'Absatzmenge (Lose)',
+                        data: salesVolumeData,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + ' Lose';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return value + ' Lose';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Show charts section
+            document.getElementById('charts-section').style.display = 'block';
+        }
 
         async function startGame() {
             const response = await fetch('/api/start_game', {
@@ -475,6 +817,9 @@
                 
                 summaryDiv.innerHTML = summaryHTML;
                 document.getElementById('summary-section').style.display = 'block';
+
+                // Create charts after summary is displayed
+                createCharts();
             }
         }
 
@@ -523,9 +868,18 @@
             document.getElementById('quarter-results').innerHTML = '';
             document.getElementById('summary-content').innerHTML = '';
 
+            // Destroy all charts
+            Object.keys(charts).forEach(key => {
+                if (charts[key]) {
+                    charts[key].destroy();
+                    charts[key] = null;
+                }
+            });
+
             // Hide/show appropriate sections and buttons
             document.getElementById('results-section').style.display = 'none';
             document.getElementById('summary-section').style.display = 'none';
+            document.getElementById('charts-section').style.display = 'none';
             document.getElementById('start-btn').style.display = 'inline-block';
             document.getElementById('simulate-btn').style.display = 'none';
             document.getElementById('simulate-btn').disabled = false;
