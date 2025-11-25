@@ -36,21 +36,7 @@ python3 factory_simulator.py
 - ✓ Interaktiv: Entscheidungen werden abgefragt
 - ✓ Automatischer JSON-Export
 
----
 
-### 3️⃣ **Excel-Tool** (Offline Option)
-```bash
-python3 excel_generator.py
-```
-Dann öffnen: `Factory_Simulation_Interactive.xlsx`
-
-**Vorteile:**
-- ✓ Vertrautes Excel-Interface
-- ✓ Vollständig offline nutzbar
-- ✓ Automatische Berechnungen mit Formeln
-- ✓ 6 Tabellenblätter (Anleitung, Parameter, Q1-4, Zusammenfassung)
-
----
 
 ## 📂 Projektinhalt
 
@@ -441,5 +427,4 @@ Ostfalia Hochschule für angewandte Wissenschaften
 Fakultät Maschinenbau
 Institut für Produktionstechnik
 WiSe 2025/26
-
 **Viel Erfolg mit Ihrem Projekt! 🚀**
