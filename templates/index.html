@@ -373,6 +373,294 @@
                 transform: scale(1);
             }
         }
+
+        /* ============================================
+           MOBILE RESPONSIVE STYLES
+           ============================================ */
+
+        /* Tablets and smaller (max-width: 1024px) */
+        @media screen and (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Mobile devices (max-width: 768px) */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .subtitle {
+                font-size: 0.95em;
+            }
+
+            /* Make status cards stack on mobile */
+            .status-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+            }
+
+            .status-value {
+                font-size: 1.5em;
+            }
+
+            /* Quarter display */
+            #quarter-display {
+                font-size: 1.5em;
+            }
+
+            #current-quarter-decision {
+                padding: 15px;
+            }
+
+            #current-quarter-decision div:first-child {
+                font-size: 0.85em;
+            }
+
+            #decision-quarter-number {
+                font-size: 2em !important;
+            }
+
+            /* Make decision inputs stack better */
+            .decision-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            /* Buttons */
+            .btn {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 1em;
+                margin: 5px 0;
+            }
+
+            /* Tables */
+            .results-table {
+                font-size: 0.9em;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 8px 6px;
+            }
+
+            /* Charts */
+            .chart-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .chart-title {
+                font-size: 1.1em;
+            }
+
+            /* Calculation explanations */
+            .calculation-explanation {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+
+            .formula {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+
+            .step {
+                padding: 6px 10px;
+                font-size: 0.9em;
+            }
+
+            /* Inventory flow - make it stack vertically */
+            .formula div[style*="display: flex"] {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+
+            .formula div[style*="flex: 1"] {
+                min-width: 100% !important;
+            }
+        }
+
+        /* Small mobile devices (max-width: 480px) */
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .subtitle {
+                font-size: 0.85em;
+            }
+
+            /* Status cards */
+            .status-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .status-card {
+                padding: 12px;
+            }
+
+            .status-label {
+                font-size: 0.8em;
+            }
+
+            .status-value {
+                font-size: 1.3em;
+            }
+
+            /* Quarter display */
+            #quarter-display {
+                font-size: 1.2em;
+                margin: 15px 0;
+            }
+
+            #current-quarter-decision {
+                padding: 12px;
+                margin-bottom: 20px;
+            }
+
+            #decision-quarter-number {
+                font-size: 1.8em !important;
+            }
+
+            /* Section titles */
+            .section-title {
+                font-size: 1.3em;
+            }
+
+            /* Input groups */
+            .input-group label {
+                font-size: 0.9em;
+            }
+
+            input[type="number"] {
+                padding: 10px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            /* Buttons */
+            .btn {
+                padding: 14px 16px;
+                font-size: 0.95em;
+            }
+
+            /* Tables - make scrollable */
+            .results-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                font-size: 0.85em;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 6px 4px;
+            }
+
+            /* Charts */
+            .chart-container {
+                height: 250px;
+            }
+
+            .chart-title {
+                font-size: 1em;
+            }
+
+            /* Calculation explanations */
+            .calculation-explanation {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+
+            .calculation-explanation h4 {
+                font-size: 1em;
+            }
+
+            .formula {
+                padding: 8px;
+                font-size: 0.8em;
+            }
+
+            .formula-label {
+                font-size: 0.85em;
+            }
+
+            .step {
+                padding: 6px 8px;
+                font-size: 0.85em;
+            }
+
+            .step-number {
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
+                font-size: 0.75em;
+            }
+
+            .value-highlight {
+                padding: 1px 4px;
+                font-size: 0.9em;
+            }
+
+            /* Close button */
+            .close-explanation {
+                font-size: 1.5em;
+            }
+        }
+
+        /* Touch-friendly improvements for all mobile devices */
+        @media (hover: none) and (pointer: coarse) {
+            /* Bigger tap targets */
+            .calculation-item {
+                padding: 12px;
+                min-height: 48px; /* Accessibility minimum */
+            }
+
+            .btn {
+                min-height: 48px;
+            }
+
+            input[type="number"] {
+                min-height: 44px;
+            }
+
+            /* Better touch feedback */
+            .calculation-item:active {
+                background-color: #cbd5e0;
+            }
+
+            .btn:active {
+                transform: scale(0.98);
+            }
+        }
     </style>
 </head>
 <body>
