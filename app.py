@@ -72,6 +72,7 @@ def simulate_quarter():
     sales_price = float(data.get('sales_price', 13.0))
     marketing_budget = float(data.get('marketing_budget', 0))
     production_lots = int(data.get('production_lots', 2))
+    material_purchase_lots = int(data.get('material_purchase_lots', 2))
     material_market_factor = float(data.get('material_market_factor', 1.0))
     overhead_factor = float(data.get('overhead_factor', 1.0))
     
@@ -80,6 +81,7 @@ def simulate_quarter():
         sales_price=sales_price,
         marketing_budget=marketing_budget,
         production_lots=production_lots,
+        material_purchase_lots=material_purchase_lots,
         material_market_factor=material_market_factor,
         overhead_factor=overhead_factor
     )
@@ -87,6 +89,8 @@ def simulate_quarter():
     # Convert result to dict
     result_dict = {
         'quarter': result.quarter,
+        'material_purchase_lots': result.material_purchase_lots,
+        'production_lots': result.production_lots,
         'sales_price': result.sales_price,
         'sales_volume': result.sales_volume,
         'sales_revenue': result.sales_revenue,
@@ -256,6 +260,36 @@ def export_excel():
 
         row += 1
 
+    # Player Decisions section
+    row += 2
+    ws.merge_cells(f'A{row}:H{row}')
+    ws[f'A{row}'] = "🎯 Spieler Entscheidungen"
+    ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
+
+    row += 2
+    decision_headers = ['Quartal', 'Rohmaterial Einkauf', 'Produktion', 'Verkaufspreis', 'Marketing']
+    for col, header in enumerate(decision_headers, start=1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    row += 1
+    for result in simulator.results:
+        ws.cell(row=row, column=1, value=f"Q{result.quarter}")
+        ws.cell(row=row, column=2, value=f"{result.material_purchase_lots} Lose")
+        ws.cell(row=row, column=3, value=f"{result.production_lots} Lose")
+        ws.cell(row=row, column=4, value=f"{result.sales_price:.2f} M")
+        ws.cell(row=row, column=5, value=f"{result.marketing_cost:.2f} M")
+
+        # Apply borders
+        for col in range(1, 6):
+            ws.cell(row=row, column=col).border = border
+            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+
+        row += 1
+
     # Quarterly results section
     row += 2
     ws.merge_cells(f'A{row}:H{row}')
@@ -357,5 +391,10 @@ if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static', exist_ok=True)
-    
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    os.makedirs('exports', exist_ok=True)
+
+    # Use environment variable for port (for cloud deployment)
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+
+    app.run(debug=debug, host='0.0.0.0', port=port)

@@ -45,12 +45,16 @@ class GameParameters:
 class QuarterResult:
     """Results for a single quarter"""
     quarter: int
-    
+
+    # Player decisions
+    material_purchase_lots: int
+    production_lots: int
+
     # Sales data
     sales_price: float
     sales_volume: int
     sales_revenue: float
-    
+
     # Costs
     material_cost: float
     production_cost: float
@@ -58,16 +62,16 @@ class QuarterResult:
     overhead_cost: float
     marketing_cost: float
     total_cost: float
-    
+
     # Results
     gross_profit: float
     net_profit: float
-    
+
     # Inventory
     raw_material_inventory: int
     work_in_progress: int
     finished_goods_inventory: int
-    
+
     # Cash flow
     cash_beginning: float
     cash_ending: float
@@ -89,6 +93,10 @@ class FactorySimulator:
         self.work_in_progress = 2  # Lots
         self.finished_goods_inventory = 2  # Lots
         
+        # Production pipeline for WIP delay
+        # Stores production lots that will enter WIP in the next quarter
+        self.production_pipeline = 0
+
         # Orders pending (from original game setup)
         self.pending_orders = [
             {"quarter": 1, "volume": 2, "price": 13.0},
@@ -140,6 +148,7 @@ class FactorySimulator:
                         sales_price: float = None,
                         marketing_budget: float = 0.0,
                         production_lots: int = 2,
+                        material_purchase_lots: int = 2,
                         material_market_factor: float = 1.0,
                         overhead_factor: float = 1.0) -> QuarterResult:
         """
@@ -148,7 +157,8 @@ class FactorySimulator:
         Args:
             sales_price: Selling price per unit (if None, uses base price)
             marketing_budget: Additional marketing spend
-            production_lots: Number of lots to produce
+            production_lots: Number of lots to produce (starts production)
+            material_purchase_lots: Number of raw material lots to buy
             material_market_factor: Material price multiplier (e.g., 1.1 = 10% increase)
             overhead_factor: Overhead cost multiplier
         """
@@ -159,48 +169,76 @@ class FactorySimulator:
         if sales_price is None:
             sales_price = self.params.base_sales_price
         
-        # Calculate demand based on price and marketing
-        sales_volume = self.calculate_demand(sales_price, marketing_budget)
-        sales_volume = min(sales_volume, self.finished_goods_inventory)  # Can't sell more than inventory
+        # --- 1. Material Purchase & Consumption ---
+        # Buy materials
+        self.raw_material_inventory += material_purchase_lots
+        material_cost = self.calculate_material_cost(material_purchase_lots, material_market_factor)
         
-        # Calculate revenues
+        # Check if we have enough material for production
+        # If not, reduce production to match available material
+        if self.raw_material_inventory < production_lots:
+            # Could log a warning here
+            production_lots = self.raw_material_inventory
+            
+        # Consume materials for NEW production
+        self.raw_material_inventory -= production_lots
+        
+        # --- 2. Production (WIP Flow) ---
+        # Logic: 
+        # - New production enters the 'pipeline' (takes time to start/process)
+        # - Items from the 'pipeline' (started last quarter) move to WIP? 
+        # - OR: Simple flow: Raw -> WIP (1 qtr) -> Finished (1 qtr)
+        # Let's stick to a simpler reliable flow for this game scale:
+        # Current Production adds to WIP immediately, but WIP -> Finished happens from *existing* WIP.
+        # To simulate flow: 
+        #   Start of Q: We have WIP from previous Q.
+        #   We finish the WIP -> moves to Finished Goods.
+        #   We start NEW production -> moves from Raw to WIP.
+        
+        # Step A: Finish existing WIP
+        lots_finished = self.work_in_progress
+        self.finished_goods_inventory += lots_finished
+        self.work_in_progress -= lots_finished
+        
+        # Step B: Start new production (moves to WIP)
+        self.work_in_progress += production_lots
+        
+        # Costs associated with the activities
+        production_cost = self.calculate_production_cost(production_lots) # Cost of STARTING production
+        assembly_cost = lots_finished * self.params.base_assembly_cost # Cost of FINISHING goods
+        
+        # --- 3. Sales ---
+        # Calculate demand
+        sales_volume = self.calculate_demand(sales_price, marketing_budget)
+        
+        # Limit sales to available finished goods
+        sales_volume = min(sales_volume, self.finished_goods_inventory)
+        
+        # Remove sold goods
+        self.finished_goods_inventory -= sales_volume
+        
+        # --- 4. Financials ---
         sales_revenue = sales_volume * sales_price
         
-        # Calculate costs
-        material_cost = self.calculate_material_cost(2, material_market_factor)  # Standard 2 lots order
-        production_cost = self.calculate_production_cost(production_lots)
-        assembly_cost = production_lots * self.params.base_assembly_cost
         overhead_cost = self.params.base_overhead_cost * overhead_factor
         marketing_cost = marketing_budget
         
         total_cost = material_cost + production_cost + assembly_cost + overhead_cost + marketing_cost
         
-        # Calculate profit
+        # Gross profit (Revenue - Direct Costs)
+        # Note: This is a simplified cash-basis calculation for the game, not strict accrual accounting
         gross_profit = sales_revenue - (material_cost + production_cost + assembly_cost)
         net_profit = sales_revenue - total_cost
         
-        # Update inventory
-        # Material: receive order, consume for production
-        self.raw_material_inventory += 2  # Delivery received
-        self.raw_material_inventory -= production_lots  # Used in production
-        
-        # WIP: produced - assembled
-        self.work_in_progress += production_lots
-        self.work_in_progress -= production_lots  # Moved to finished goods
-        
-        # Finished goods: assembled - sold
-        self.finished_goods_inventory += production_lots
-        self.finished_goods_inventory -= sales_volume
-        
-        # Update cash flow
-        # Cash in: customer payments (previous quarter receivables)
+        # Cash Flow
+        # In: Receivables from PREVIOUS quarter
         cash_in = self.accounts_receivable
         self.cash += cash_in
         
-        # Cash out: all costs
+        # Out: All current costs
         self.cash -= total_cost
         
-        # New receivables from this quarter's sales
+        # New Receivables: This quarter's revenue (paid next quarter)
         self.accounts_receivable = sales_revenue
         
         cash_ending = self.cash
@@ -208,6 +246,8 @@ class FactorySimulator:
         # Create quarter result
         result = QuarterResult(
             quarter=self.current_quarter,
+            material_purchase_lots=material_purchase_lots,
+            production_lots=production_lots,
             sales_price=sales_price,
             sales_volume=sales_volume,
             sales_revenue=sales_revenue,
