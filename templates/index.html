@@ -651,9 +651,92 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .calculation-item:hover {
             background: #edf2f7 !important;
+        }
+
+        .calculation-row {
+            position: relative;
+        }
+
+        .calculation-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .calculation-toggle:hover {
+            background: #f7fafc !important;
+        }
+
+        .calculation-toggle::before {
+            content: '▶';
+            display: inline-block;
+            width: 20px;
+            font-size: 0.8em;
+            color: var(--primary);
+            transition: transform 0.2s;
+            margin-right: 5px;
+        }
+
+        .calculation-toggle.expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .calculation-details {
+            display: none;
+            background: linear-gradient(to right, #f7fafc, #ffffff);
+            border-left: 3px solid var(--primary);
+            padding: 15px 20px;
+            margin: 5px 0;
+            font-size: 0.9em;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .calculation-details.show {
+            display: table-row;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .formula {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            font-family: 'Courier New', monospace;
+            color: var(--dark);
+        }
+
+        .formula-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 0.85em;
+        }
+
+        .formula-line {
+            margin: 3px 0;
+            padding-left: 10px;
+        }
+
+        .formula-result {
+            font-weight: bold;
+            color: var(--success);
+            border-top: 2px solid var(--border);
+            margin-top: 8px;
+            padding-top: 8px;
         }
         
         .positive {
@@ -1241,18 +1324,56 @@
             }
         }
 
+        // Toggle calculation details
+        function toggleDetails(element) {
+            const row = element;
+            const detailsRow = row.nextElementSibling;
+            const toggle = row.querySelector('.calculation-toggle');
+            
+            if (detailsRow.classList.contains('show')) {
+                detailsRow.classList.remove('show');
+                toggle.classList.remove('expanded');
+            } else {
+                detailsRow.classList.add('show');
+                toggle.classList.add('expanded');
+            }
+        }
+
         // Display quarter results
         function displayQuarterResults(result) {
             const resultsSection = document.getElementById('results-section');
 
             const resultCard = document.createElement('div');
             resultCard.className = 'card';
-            resultCard.innerHTML = `
+            
+            // Helper to create rows with details
+            const createRow = (label, value, valueClass, formulaTitle, formulaSteps) => {
+                return `
+                    <tr class="calculation-row" onclick="toggleDetails(this)" style="cursor: pointer;">
+                        <td><span class="calculation-toggle"></span> ${label}</td>
+                        <td class="${valueClass}">${value}</td>
+                    </tr>
+                    <tr class="calculation-details">
+                        <td colspan="2">
+                            <div class="formula">
+                                <div class="formula-title">${formulaTitle}</div>
+                                ${formulaSteps.map(step => `<div class="formula-line">${step}</div>`).join('')}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            };
+
+            let html = `
                 <div class="card-header">
                     <div class="card-title">
                         <div class="card-icon">📊</div>
                         Quartal ${result.quarter} - Ergebnisse
                     </div>
+                </div>
+                
+                <div class="alert alert-info" style="margin-bottom: 15px; padding: 10px;">
+                    <small>ℹ️ Tipp: Klicken Sie auf die Zeilen, um die Berechnungdetails anzuzeigen.</small>
                 </div>
 
                 <table class="results-table">
@@ -1263,54 +1384,156 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Umsatzerlöse</td>
-                            <td class="positive">${result.sales_revenue.toFixed(2)} M</td>
-                        </tr>
-                        <tr>
-                            <td>Herstellungskosten</td>
-                            <td class="negative">-${result.herstellungskosten.toFixed(2)} M</td>
-                        </tr>
-                        <tr style="background: #e6f3ff;">
-                            <td><strong>Bruttoergebnis</strong></td>
-                            <td class="${result.gross_profit >= 0 ? 'positive' : 'negative'}"><strong>${result.gross_profit.toFixed(2)} M</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Gemeinkosten</td>
-                            <td class="negative">-${result.overhead_cost.toFixed(2)} M</td>
-                        </tr>
-                        <tr>
-                            <td>Marketing</td>
-                            <td class="negative">-${result.marketing_cost.toFixed(2)} M</td>
-                        </tr>
-                        <tr>
-                            <td>Abschreibungen</td>
-                            <td class="negative">-${result.depreciation.toFixed(2)} M</td>
-                        </tr>
-                        <tr style="background: #e6f3ff;">
-                            <td><strong>EBIT (Betriebsergebnis)</strong></td>
-                            <td class="${result.ebit >= 0 ? 'positive' : 'negative'}"><strong>${result.ebit.toFixed(2)} M</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Zinsen</td>
-                            <td class="negative">-${result.interest.toFixed(2)} M</td>
-                        </tr>
-                        <tr style="background: #e6f3ff;">
-                            <td><strong>Gewinn vor Steuern</strong></td>
-                            <td class="${result.profit_before_tax >= 0 ? 'positive' : 'negative'}"><strong>${result.profit_before_tax.toFixed(2)} M</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Steuern (33,33%)</td>
-                            <td class="negative">-${result.tax.toFixed(2)} M</td>
-                        </tr>
-                        <tr style="background: ${result.net_profit >= 0 ? '#c6f6d5' : '#fed7d7'};">
-                            <td><strong>Gewinn nach Steuern</strong></td>
-                            <td class="${result.net_profit >= 0 ? 'positive' : 'negative'}"><strong>${result.net_profit.toFixed(2)} M</strong></td>
-                        </tr>
+            `;
+
+            // Umsatzerlöse
+            html += createRow(
+                'Umsatzerlöse', 
+                result.sales_revenue.toFixed(2) + ' M', 
+                'positive',
+                'Berechnung Umsatzerlöse',
+                [
+                    'Verkaufspreis × Absatzmenge',
+                    `${result.sales_price.toFixed(2)} M × ${result.sales_volume} Lose`,
+                    `= ${result.sales_revenue.toFixed(2)} M`
+                ]
+            );
+
+            // Herstellungskosten
+            html += createRow(
+                'Herstellungskosten', 
+                '-' + result.herstellungskosten.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Herstellungskosten',
+                [
+                    'Materialkosten + Fertigungskosten + Montagekosten',
+                    `${result.material_cost.toFixed(2)} M + ${result.production_cost.toFixed(2)} M + ${result.assembly_cost.toFixed(2)} M`,
+                    `= ${result.herstellungskosten.toFixed(2)} M`
+                ]
+            );
+
+            // Bruttoergebnis
+            html += createRow(
+                '<strong>Bruttoergebnis</strong>', 
+                '<strong>' + result.gross_profit.toFixed(2) + ' M</strong>', 
+                result.gross_profit >= 0 ? 'positive' : 'negative',
+                'Berechnung Bruttoergebnis',
+                [
+                    'Umsatzerlöse - Herstellungskosten',
+                    `${result.sales_revenue.toFixed(2)} M - ${result.herstellungskosten.toFixed(2)} M`,
+                    `= ${result.gross_profit.toFixed(2)} M`
+                ]
+            );
+
+            // Gemeinkosten
+            html += createRow(
+                'Gemeinkosten', 
+                '-' + result.overhead_cost.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Gemeinkosten',
+                [
+                    'Fixer Basiswert (ggf. mit Faktor)',
+                    'Standard: 6.00 M',
+                    `Aktuell: ${result.overhead_cost.toFixed(2)} M`
+                ]
+            );
+
+            // Marketing
+            html += createRow(
+                'Marketing', 
+                '-' + result.marketing_cost.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Marketing',
+                [
+                    'Investiertes Budget',
+                    `Eingabe: ${result.marketing_cost.toFixed(2)} M`
+                ]
+            );
+            
+            // Abschreibungen
+            html += createRow(
+                'Abschreibungen', 
+                '-' + result.depreciation.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Abschreibungen',
+                [
+                    'Lineare Abschreibung der Anlagen',
+                    '9.0 M / 4 Quartale',
+                    `= ${result.depreciation.toFixed(2)} M (fix)`
+                ]
+            );
+
+            // EBIT
+            html += createRow(
+                '<strong>EBIT (Betriebsergebnis)</strong>', 
+                '<strong>' + result.ebit.toFixed(2) + ' M</strong>', 
+                result.ebit >= 0 ? 'positive' : 'negative',
+                'Berechnung EBIT',
+                [
+                    'Bruttoergebnis - Gemeinkosten - Marketing - Abschreibungen',
+                    `${result.gross_profit.toFixed(2)} M - ${result.overhead_cost.toFixed(2)} M - ${result.marketing_cost.toFixed(2)} M - ${result.depreciation.toFixed(2)} M`,
+                    `= ${result.ebit.toFixed(2)} M`
+                ]
+            );
+
+            // Zinsen
+            html += createRow(
+                'Zinsen', 
+                '-' + result.interest.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Zinsen',
+                [
+                    'Zinsen auf langfristiges Kapital',
+                    '10.0 M / 4 Quartale',
+                    `= ${result.interest.toFixed(2)} M (fix)`
+                ]
+            );
+
+            // Gewinn vor Steuern
+            html += createRow(
+                '<strong>Gewinn vor Steuern</strong>', 
+                '<strong>' + result.profit_before_tax.toFixed(2) + ' M</strong>', 
+                result.profit_before_tax >= 0 ? 'positive' : 'negative',
+                'Berechnung Gewinn vor Steuern',
+                [
+                    'EBIT - Zinsen',
+                    `${result.ebit.toFixed(2)} M - ${result.interest.toFixed(2)} M`,
+                    `= ${result.profit_before_tax.toFixed(2)} M`
+                ]
+            );
+
+            // Steuern
+            html += createRow(
+                'Steuern (33,33%)', 
+                '-' + result.tax.toFixed(2) + ' M', 
+                'negative',
+                'Berechnung Steuern',
+                [
+                    '33,33% vom Gewinn vor Steuern (nur bei Gewinn > 0)',
+                    result.profit_before_tax > 0 ? `${result.profit_before_tax.toFixed(2)} M × 0.3333` : 'Kein Gewinn, keine Steuern',
+                    `= ${result.tax.toFixed(2)} M`
+                ]
+            );
+
+            // Gewinn nach Steuern
+            html += createRow(
+                '<strong>Gewinn nach Steuern</strong>', 
+                '<strong>' + result.net_profit.toFixed(2) + ' M</strong>', 
+                result.net_profit >= 0 ? 'positive' : 'negative',
+                'Berechnung Gewinn nach Steuern',
+                [
+                    'Gewinn vor Steuern - Steuern',
+                    `${result.profit_before_tax.toFixed(2)} M - ${result.tax.toFixed(2)} M`,
+                    `= ${result.net_profit.toFixed(2)} M`
+                ]
+            );
+
+            html += `
                     </tbody>
                 </table>
             `;
 
+            resultCard.innerHTML = html;
             resultsSection.appendChild(resultCard);
         }
 
