@@ -1,0 +1,3336 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Factory Business Simulation - Planspiel BWL</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        padding: 30px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #667eea;
+      }
+
+      h1 {
+        color: #2d3748;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #718096;
+        font-size: 1.1em;
+      }
+
+      .game-section {
+        margin: 30px 0;
+        padding: 20px;
+        background: #f7fafc;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .section-title {
+        color: #2d3748;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .status-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .status-label {
+        color: #718096;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+      }
+
+      .status-value {
+        color: #2d3748;
+        font-size: 1.8em;
+        font-weight: bold;
+      }
+
+      .input-group {
+        margin: 15px 0;
+      }
+
+      label {
+        display: block;
+        color: #4a5568;
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e2e8f0;
+        border-radius: 5px;
+        font-size: 1em;
+        transition: border-color 0.3s;
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .btn {
+        background: #667eea;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+
+      .btn:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-secondary {
+        background: #48bb78;
+      }
+
+      .btn-secondary:hover {
+        background: #38a169;
+      }
+
+      .btn-reset {
+        background: #f56565;
+      }
+
+      .btn-reset:hover {
+        background: #e53e3e;
+      }
+
+      .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .results-table th {
+        background: #667eea;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+      }
+
+      .results-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .results-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .results-table tr:hover {
+        background: #f7fafc;
+      }
+
+      .positive {
+        color: #38a169;
+        font-weight: 600;
+      }
+
+      .negative {
+        color: #e53e3e;
+        font-weight: 600;
+      }
+
+      .chart-container {
+        margin: 30px 0;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        height: 400px;
+        position: relative;
+      }
+
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 30px;
+        margin: 20px 0;
+      }
+
+      .chart-title {
+        text-align: center;
+        color: #2d3748;
+        font-size: 1.3em;
+        font-weight: 600;
+        margin-bottom: 15px;
+      }
+
+      .decision-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid #38a169;
+      }
+
+      .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left: 4px solid #3182ce;
+      }
+
+      #quarter-display {
+        text-align: center;
+        font-size: 2em;
+        color: #667eea;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+
+      /* Interactive Explanation Styles */
+      .calculation-item {
+        cursor: pointer;
+        position: relative;
+        padding: 8px;
+        border-radius: 5px;
+        transition: background-color 0.2s;
+      }
+
+      .calculation-item:hover {
+        background-color: #edf2f7;
+      }
+
+      .calculation-item::after {
+        content: "ℹ️";
+        position: absolute;
+        right: 10px;
+        opacity: 0.5;
+        font-size: 0.9em;
+      }
+
+      .calculation-explanation {
+        display: none;
+        margin-top: 10px;
+        padding: 15px;
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        animation: slideDown 0.3s ease-out;
+      }
+
+      .calculation-explanation.active {
+        display: block;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .formula {
+        background: white;
+        padding: 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 1em;
+        margin: 10px 0;
+        border: 1px solid #cbd5e0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .formula-label {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+
+      .calculation-steps {
+        margin: 15px 0;
+      }
+
+      .step {
+        padding: 8px 12px;
+        margin: 8px 0;
+        background: white;
+        border-radius: 5px;
+        border-left: 3px solid #48bb78;
+      }
+
+      .step-number {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 24px;
+        font-size: 0.85em;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      .close-explanation {
+        float: right;
+        cursor: pointer;
+        color: #718096;
+        font-size: 1.2em;
+        font-weight: bold;
+        line-height: 1;
+        transition: color 0.2s;
+      }
+
+      .close-explanation:hover {
+        color: #2d3748;
+      }
+
+      .value-highlight {
+        background: #fef5e7;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: 600;
+        color: #d97706;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* ============================================
+           MOBILE RESPONSIVE STYLES
+           ============================================ */
+
+      /* Tablets and smaller (max-width: 1024px) */
+      @media screen and (max-width: 1024px) {
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 2em;
+        }
+
+        .chart-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .chart-container {
+          height: 350px;
+        }
+      }
+
+      /* Mobile devices (max-width: 768px) */
+      @media screen and (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          padding: 15px;
+          border-radius: 10px;
+        }
+
+        h1 {
+          font-size: 1.8em;
+        }
+
+        .subtitle {
+          font-size: 0.95em;
+        }
+
+        /* Make status cards stack on mobile */
+        .status-grid {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 10px;
+        }
+
+        .status-value {
+          font-size: 1.5em;
+        }
+
+        /* Quarter display */
+        #quarter-display {
+          font-size: 1.5em;
+        }
+
+        #current-quarter-decision {
+          padding: 15px;
+        }
+
+        #current-quarter-decision div:first-child {
+          font-size: 0.85em;
+        }
+
+        #decision-quarter-number {
+          font-size: 2em !important;
+        }
+
+        /* Make decision inputs stack better */
+        .decision-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+          width: 100%;
+          padding: 12px 20px;
+          font-size: 1em;
+          margin: 5px 0;
+        }
+
+        /* Tables */
+        .results-table {
+          font-size: 0.9em;
+        }
+
+        .results-table th,
+        .results-table td {
+          padding: 8px 6px;
+        }
+
+        /* Charts */
+        .chart-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .chart-container {
+          height: 300px;
+        }
+
+        .chart-title {
+          font-size: 1.1em;
+        }
+
+        /* Calculation explanations */
+        .calculation-explanation {
+          padding: 12px;
+          font-size: 0.9em;
+        }
+
+        .formula {
+          padding: 10px;
+          font-size: 0.85em;
+        }
+
+        .step {
+          padding: 6px 10px;
+          font-size: 0.9em;
+        }
+
+        /* Inventory flow - make it stack vertically */
+        .formula div[style*="display: flex"] {
+          flex-direction: column !important;
+          gap: 15px !important;
+        }
+
+        .formula div[style*="flex: 1"] {
+          min-width: 100% !important;
+        }
+      }
+
+      /* Small mobile devices (max-width: 480px) */
+      @media screen and (max-width: 480px) {
+        h1 {
+          font-size: 1.5em;
+        }
+
+        .subtitle {
+          font-size: 0.85em;
+        }
+
+        /* Status cards */
+        .status-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
+        .status-card {
+          padding: 12px;
+        }
+
+        .status-label {
+          font-size: 0.8em;
+        }
+
+        .status-value {
+          font-size: 1.3em;
+        }
+
+        /* Quarter display */
+        #quarter-display {
+          font-size: 1.2em;
+          margin: 15px 0;
+        }
+
+        #current-quarter-decision {
+          padding: 12px;
+          margin-bottom: 20px;
+        }
+
+        #decision-quarter-number {
+          font-size: 1.8em !important;
+        }
+
+        /* Section titles */
+        .section-title {
+          font-size: 1.3em;
+        }
+
+        /* Input groups */
+        .input-group label {
+          font-size: 0.9em;
+        }
+
+        input[type="number"] {
+          padding: 10px;
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+
+        /* Buttons */
+        .btn {
+          padding: 14px 16px;
+          font-size: 0.95em;
+        }
+
+        /* Tables - make scrollable */
+        .results-table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+          font-size: 0.85em;
+        }
+
+        .results-table th,
+        .results-table td {
+          padding: 6px 4px;
+        }
+
+        /* Charts */
+        .chart-container {
+          height: 250px;
+        }
+
+        .chart-title {
+          font-size: 1em;
+        }
+
+        /* Calculation explanations */
+        .calculation-explanation {
+          padding: 10px;
+          font-size: 0.85em;
+        }
+
+        .calculation-explanation h4 {
+          font-size: 1em;
+        }
+
+        .formula {
+          padding: 8px;
+          font-size: 0.8em;
+        }
+
+        .formula-label {
+          font-size: 0.85em;
+        }
+
+        .step {
+          padding: 6px 8px;
+          font-size: 0.85em;
+        }
+
+        .step-number {
+          width: 20px;
+          height: 20px;
+          line-height: 20px;
+          font-size: 0.75em;
+        }
+
+        .value-highlight {
+          padding: 1px 4px;
+          font-size: 0.9em;
+        }
+
+        /* Close button */
+        .close-explanation {
+          font-size: 1.5em;
+        }
+      }
+
+      /* Touch-friendly improvements for all mobile devices */
+      @media (hover: none) and (pointer: coarse) {
+        /* Bigger tap targets */
+        .calculation-item {
+          padding: 12px;
+          min-height: 48px; /* Accessibility minimum */
+        }
+
+        .btn {
+          min-height: 48px;
+        }
+
+        input[type="number"] {
+          min-height: 44px;
+        }
+
+        /* Better touch feedback */
+        .calculation-item:active {
+          background-color: #cbd5e0;
+        }
+
+        .btn:active {
+          transform: scale(0.98);
+        }
+      }
+
+      /* NEW STYLES FOR UX IMPROVEMENTS */
+      .summary-highlight {
+        border: 3px solid #667eea;
+        background: linear-gradient(to bottom, #ffffff, #f7fafc);
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+        animation: fadeIn 1s ease-out;
+      }
+
+      .collapsible-header {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+      }
+
+      .collapsible-header::after {
+        content: "▼";
+        font-size: 0.8em;
+        transition: transform 0.3s;
+      }
+
+      .collapsed .collapsible-header::after {
+        transform: rotate(-90deg);
+      }
+
+      .collapsible-content {
+        transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+        max-height: 2000px; /* Arbitrary large height */
+        opacity: 1;
+        overflow: hidden;
+      }
+
+      .collapsed .collapsible-content {
+        max-height: 0;
+        opacity: 0;
+      }
+
+      .jump-btn {
+        display: none; /* Hidden by default */
+        margin: 20px auto;
+        background: #ed8936;
+        color: white;
+        font-weight: bold;
+        padding: 15px 30px;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(237, 137, 54, 0.4);
+        transition: all 0.3s;
+        text-align: center;
+        font-size: 1.2em;
+        cursor: pointer;
+        border: none;
+        width: fit-content;
+      }
+
+      .jump-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(237, 137, 54, 0.6);
+        background: #dd6b20;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🏭 Factory Business Simulation</h1>
+        <p class="subtitle">Planspiel BWL für BDE - WiSe 2025/26</p>
+        <p class="subtitle">
+          Ostfalia Hochschule für angewandte Wissenschaften
+        </p>
+        <p
+          class="subtitle"
+          style="margin-top: 10px; font-weight: 600; color: #4a5568"
+        >
+          Betreuer: Prof. Dr. C. Haats
+        </p>
+        <p
+          class="subtitle"
+          style="margin-top: 5px; font-weight: 600; color: #667eea"
+        >
+          Erstellt von: Mohamed Eid
+        </p>
+      </header>
+
+      <div class="game-section">
+        <h2 class="section-title">Spielstatus</h2>
+        <div id="quarter-display">
+          Quartal: <span id="current-quarter">0</span> / 4
+        </div>
+
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="status-label">💰 Kasse</div>
+            <div class="status-value"><span id="cash">28.0</span> M</div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">📋 Forderungen</div>
+            <div class="status-value"><span id="receivables">26.0</span> M</div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">📦 Rohmaterial</div>
+            <div class="status-value">
+              <span id="raw-material">2</span> Lose
+            </div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">⚙️ Halbfertig</div>
+            <div class="status-value"><span id="wip">2</span> Lose</div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">📦 Fertigware</div>
+            <div class="status-value">
+              <span id="finished-goods">2</span> Lose
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-section" id="decision-section">
+        <h2 class="section-title">Ihre Entscheidungen</h2>
+
+        <div
+          id="current-quarter-decision"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+          "
+        >
+          <div
+            style="
+              font-size: 0.9em;
+              font-weight: 500;
+              opacity: 0.9;
+              margin-bottom: 5px;
+            "
+          >
+            Sie treffen jetzt Entscheidungen für:
+          </div>
+          <div
+            style="
+              font-size: 2.5em;
+              font-weight: bold;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            "
+          >
+            <span id="decision-quarter-number">Quartal 1</span>
+          </div>
+          <div style="font-size: 0.85em; margin-top: 8px; opacity: 0.85">
+            📊 Ihre Eingaben werden für dieses Quartal verwendet
+          </div>
+        </div>
+
+        <div class="decision-grid">
+          <div class="input-group">
+            <label for="sales-price">💵 Verkaufspreis (M pro Einheit)</label>
+            <input
+              type="number"
+              id="sales-price"
+              value="13.0"
+              step="0.5"
+              min="1"
+            />
+            <small style="color: #718096">Standard: 13.0 M</small>
+          </div>
+
+          <div class="input-group">
+            <label for="marketing-budget">📣 Marketing-Budget (M)</label>
+            <input
+              type="number"
+              id="marketing-budget"
+              value="0"
+              step="0.5"
+              min="0"
+            />
+            <small style="color: #718096">Erhöht die Nachfrage</small>
+          </div>
+
+          <div class="input-group">
+            <label for="material-purchase">📦 Rohmaterial Einkauf (Lose)</label>
+            <input
+              type="number"
+              id="material-purchase"
+              value="2"
+              step="1"
+              min="0"
+              max="10"
+            />
+            <small style="color: #718096">Standard: 2 Lose</small>
+          </div>
+
+          <div class="input-group">
+            <label for="production-lots">🏭 Produktionsmenge (Lose)</label>
+            <input
+              type="number"
+              id="production-lots"
+              value="2"
+              step="1"
+              min="1"
+              max="5"
+            />
+            <small style="color: #718096">Standard: 2 Lose</small>
+          </div>
+
+          <div class="input-group">
+            <label for="material-factor">📊 Materialpreis-Faktor</label>
+            <input
+              type="number"
+              id="material-factor"
+              value="1.0"
+              step="0.1"
+              min="0.5"
+              max="2.0"
+            />
+            <small style="color: #718096">1.0 = normal, 1.2 = +20%</small>
+          </div>
+
+          <div class="input-group">
+            <label for="overhead-factor">🏢 Gemeinkosten-Faktor</label>
+            <input
+              type="number"
+              id="overhead-factor"
+              value="1.0"
+              step="0.1"
+              min="0.5"
+              max="2.0"
+            />
+            <small style="color: #718096">1.0 = 6.0 M, 1.5 = 9.0 M</small>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px">
+          <button class="btn" id="start-btn" onclick="startGame()">
+            🎮 Spiel Starten
+          </button>
+          <button
+            class="btn"
+            id="simulate-btn"
+            onclick="simulateQuarter()"
+            style="display: none"
+          >
+            ▶️ Quartal Simulieren
+          </button>
+          <button
+            class="btn btn-secondary"
+            id="export-btn"
+            onclick="exportResults()"
+            style="display: none; margin-left: 10px"
+          >
+            📥 Ergebnisse Exportieren
+          </button>
+          <button
+            class="btn btn-reset"
+            id="reset-btn"
+            onclick="resetGame()"
+            style="margin-left: 10px"
+          >
+            🔄 Neues Spiel
+          </button>
+        </div>
+      </div>
+
+        <div class="game-section" id="results-section" style="display:none;">
+            <div class="collapsible-header" onclick="toggleSection('results-section')">
+                <h2 class="section-title" style="margin-bottom: 0;">Quartalsergebnisse</h2>
+                <span style="color: #718096; font-size: 0.9em;">(Klicken zum Ein-/Ausklappen)</span>
+            </div>
+            <div class="collapsible-content">
+                <div id="quarter-results"></div>
+            </div>
+        </div>
+
+        <button id="jump-to-summary-btn" class="jump-btn" onclick="scrollToSummary()">
+            ⬇️ Zum Jahresabschluss & Charts
+        </button>
+
+        <div class="game-section summary-highlight" id="summary-section" style="display:none;">
+            <h2 class="section-title">🏆 Jahresabschluss</h2>
+            <div id="summary-content"></div>
+        </div>
+
+      <div class="game-section" id="charts-section" style="display: none">
+        <h2 class="section-title">📊 Grafische Auswertungen</h2>
+
+        <!-- Priority 1: GuV Waterfall Chart (MOST IMPORTANT) -->
+        <div style="margin-bottom: 40px">
+          <h3 class="chart-title" style="font-size: 1.5em; color: #667eea">
+            🌊 GuV-Wasserfalldiagramm (Gewinn-Kaskade)
+          </h3>
+          <p style="text-align: center; color: #718096; margin-bottom: 15px">
+            Zeigt den Weg vom Umsatz zum Nettogewinn durch alle GuV-Stufen
+          </p>
+          <div class="chart-container" style="height: 500px">
+            <canvas id="waterfallChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Priority 1: Quarterly Performance Multi-Line Chart -->
+        <div style="margin-bottom: 40px">
+          <h3 class="chart-title" style="font-size: 1.5em; color: #667eea">
+            📈 Quartalsweise Entwicklung (Alle Kennzahlen)
+          </h3>
+          <p style="text-align: center; color: #718096; margin-bottom: 15px">
+            Umsatz, Kosten, Gewinn und Kassenbestand im Zeitverlauf
+          </p>
+          <div class="chart-container" style="height: 450px">
+            <canvas id="quarterlyPerformanceChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div>
+            <h3 class="chart-title">💰 Gewinnentwicklung über Quartale</h3>
+            <div class="chart-container">
+              <canvas id="profitChart"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="chart-title">📊 GuV-Komponenten im Vergleich</h3>
+            <div class="chart-container">
+              <canvas id="guvComponentsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div>
+            <h3 class="chart-title">🥧 Kostenverteilung (Gesamt)</h3>
+            <div class="chart-container">
+              <canvas id="costBreakdownChart"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="chart-title">💵 Kassenbestand-Entwicklung</h3>
+            <div class="chart-container">
+              <canvas id="cashFlowChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority 2: Stacked Bar Chart -->
+        <div style="margin-bottom: 40px; margin-top: 40px">
+          <h3 class="chart-title" style="font-size: 1.5em; color: #667eea">
+            📊 Quartalsergebnisse (Gestapelt)
+          </h3>
+          <p style="text-align: center; color: #718096; margin-bottom: 15px">
+            Detaillierte Aufschlüsselung von Umsatz und Kostenarten pro Quartal
+          </p>
+          <div class="chart-container" style="height: 450px">
+            <canvas id="stackedBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let gameId = "game_" + Date.now();
+      let currentQuarter = 0;
+      let allResults = [];
+      let charts = {
+        waterfall: null, // Priority 1: GuV Waterfall
+        quarterlyPerformance: null, // Priority 1: Multi-line performance
+        profit: null, // Simple profit trend
+        guvComponents: null, // GuV stages comparison
+        costBreakdown: null, // Enhanced cost pie chart
+        cashFlow: null, // Cash balance area chart
+        stackedBar: null, // Stacked cost breakdown
+      };
+
+      function createCharts() {
+        console.log("createCharts() called with", allResults.length, "results");
+        if (!allResults || allResults.length === 0) {
+          console.error("No results available for charts");
+          return;
+        }
+
+        // Destroy existing charts if they exist
+        Object.keys(charts).forEach((key) => {
+          if (charts[key]) {
+            charts[key].destroy();
+            charts[key] = null;
+          }
+        });
+
+        const quarters = allResults.map((r) => `Q${r.quarter}`);
+        console.log("Creating charts for quarters:", quarters);
+
+        // Prepare common data arrays (used by multiple charts)
+        const revenueData = allResults.map((r) => r.sales_revenue);
+        const netProfitData = allResults.map((r) => r.net_profit);
+        const cashData = allResults.map((r) => r.cash_ending);
+        console.log(
+          "Data prepared - Revenue:",
+          revenueData,
+          "Profit:",
+          netProfitData
+        );
+
+        // 1. Profit Trend Chart (Line Chart)
+        const profitCtx = document
+          .getElementById("profitChart")
+          .getContext("2d");
+        const profitData = netProfitData; // Reuse netProfitData
+        charts.profit = new Chart(profitCtx, {
+          type: "line",
+          data: {
+            labels: quarters,
+            datasets: [
+              {
+                label: "Nettogewinn (M)",
+                data: profitData,
+                borderColor: "#667eea",
+                backgroundColor: "rgba(102, 126, 234, 0.1)",
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#667eea",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      context.parsed.y.toFixed(2) +
+                      " M"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value + " M";
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // OLD Revenue vs Cost Chart removed - replaced by new charts below
+
+        // OLD charts removed - replaced by enhanced versions below
+        // (costBreakdown and cashFlow charts are created below with new structure)
+
+        // ========================================
+        // PRIORITY 1: GuV WATERFALL CHART
+        // ========================================
+        const waterfallCtx = document
+          .getElementById("waterfallChart")
+          .getContext("2d");
+
+        // Calculate average GuV values across all quarters for the waterfall
+        const avgRevenue =
+          allResults.reduce((sum, r) => sum + r.sales_revenue, 0) /
+          allResults.length;
+        const avgHerstellung =
+          allResults.reduce((sum, r) => sum + r.herstellungskosten, 0) /
+          allResults.length;
+        const avgGross =
+          allResults.reduce((sum, r) => sum + r.gross_profit, 0) /
+          allResults.length;
+        const avgOverhead =
+          allResults.reduce((sum, r) => sum + r.overhead_cost, 0) /
+          allResults.length;
+        const avgMarketing =
+          allResults.reduce((sum, r) => sum + r.marketing_cost, 0) /
+          allResults.length;
+        const avgDepreciation =
+          allResults.reduce((sum, r) => sum + r.depreciation, 0) /
+          allResults.length;
+        const avgEBIT =
+          allResults.reduce((sum, r) => sum + r.ebit, 0) / allResults.length;
+        const avgInterest =
+          allResults.reduce((sum, r) => sum + r.interest, 0) /
+          allResults.length;
+        const avgPBT =
+          allResults.reduce((sum, r) => sum + r.profit_before_tax, 0) /
+          allResults.length;
+        const avgTax =
+          allResults.reduce((sum, r) => sum + r.tax, 0) / allResults.length;
+        const avgNetProfit =
+          allResults.reduce((sum, r) => sum + r.net_profit, 0) /
+          allResults.length;
+
+        // Waterfall chart data structure
+        // We use a bar chart with custom positioning to create waterfall effect
+        const waterfallLabels = [
+          "Umsatz",
+          "Herstellung",
+          "Brutto",
+          "Gemeinkosten",
+          "Marketing",
+          "Abschreibung",
+          "EBIT",
+          "Zinsen",
+          "vor Steuern",
+          "Steuern",
+          "Nettogewinn",
+        ];
+
+        const waterfallValues = [
+          avgRevenue, // Start with revenue
+          avgGross, // After herstellung costs
+          avgGross, // Gross profit (shown)
+          avgGross - avgOverhead, // After overhead
+          avgGross - avgOverhead - avgMarketing, // After marketing
+          avgEBIT, // After depreciation
+          avgEBIT, // EBIT (shown)
+          avgPBT, // After interest
+          avgPBT, // PBT (shown)
+          avgPBT - avgTax, // After tax
+          avgNetProfit, // Net profit (shown)
+        ];
+
+        const waterfallBase = [
+          0, // Revenue starts at 0
+          avgGross, // Herstellung reduction
+          0, // Gross starts at 0
+          avgGross - avgOverhead, // Overhead reduction
+          avgGross - avgOverhead - avgMarketing, // Marketing reduction
+          avgEBIT, // Depreciation reduction
+          0, // EBIT starts at 0
+          avgPBT, // Interest reduction
+          0, // PBT starts at 0
+          avgPBT - avgTax, // Tax reduction
+          0, // Net profit starts at 0
+        ];
+
+        // Colors: Green for positive/revenue, Red for costs, Blue for results
+        const waterfallColors = [
+          "#48bb78", // Umsatz - Green
+          "#f56565", // Herstellung - Red (cost)
+          "#4299e1", // Brutto - Blue (result)
+          "#f56565", // Gemeinkosten - Red
+          "#f56565", // Marketing - Red
+          "#ed8936", // Abschreibung - Orange
+          "#4299e1", // EBIT - Blue (result)
+          "#c53030", // Zinsen - Dark red
+          "#4299e1", // vor Steuern - Blue (result)
+          "#c53030", // Steuern - Dark red
+          "#38a169", // Nettogewinn - Dark green (final)
+        ];
+
+        charts.waterfall = new Chart(waterfallCtx, {
+          type: "bar",
+          data: {
+            labels: waterfallLabels,
+            datasets: [
+              {
+                label: "GuV-Kaskade (Durchschnitt pro Quartal)",
+                data: waterfallValues,
+                backgroundColor: waterfallColors,
+                borderColor: waterfallColors.map((c) => c),
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.label + ": " + context.parsed.y.toFixed(2) + " M"
+                    );
+                  },
+                  afterLabel: function (context) {
+                    const idx = context.dataIndex;
+                    if (idx === 0) return "(Ausgangspunkt)";
+                    if (idx === 2) return "(= Umsatz - Herstellung)";
+                    if (idx === 6) return "(= Brutto - Gemeinkosten - Abschr.)";
+                    if (idx === 8) return "(= EBIT - Zinsen)";
+                    if (idx === 10) return "(= vor Steuern - Steuern)";
+                    return "";
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Von Umsatz zu Nettogewinn: GuV-Stufen im Durchschnitt",
+                font: { size: 16, weight: "bold" },
+                color: "#2d3748",
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toFixed(1) + " M";
+                  },
+                  font: { size: 12 },
+                },
+                title: {
+                  display: true,
+                  text: "Betrag (M)",
+                  font: { size: 13, weight: "bold" },
+                },
+              },
+              x: {
+                ticks: {
+                  font: { size: 11 },
+                  maxRotation: 45,
+                  minRotation: 45,
+                },
+              },
+            },
+          },
+        });
+
+        // ========================================
+        // PRIORITY 1: QUARTERLY PERFORMANCE MULTI-LINE CHART
+        // ========================================
+        const quarterlyPerfCtx = document
+          .getElementById("quarterlyPerformanceChart")
+          .getContext("2d");
+
+        // revenueData, netProfitData, cashData already declared above - reuse them
+        const totalCostsData = allResults.map(
+          (r) =>
+            r.herstellungskosten +
+            r.overhead_cost +
+            r.marketing_cost +
+            r.depreciation +
+            r.interest +
+            r.tax
+        );
+
+        charts.quarterlyPerformance = new Chart(quarterlyPerfCtx, {
+          type: "line",
+          data: {
+            labels: quarters,
+            datasets: [
+              {
+                label: "💰 Umsatzerlöse",
+                data: revenueData,
+                borderColor: "#48bb78",
+                backgroundColor: "rgba(72, 187, 120, 0.1)",
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#48bb78",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+              },
+              {
+                label: "📉 Gesamtkosten",
+                data: totalCostsData,
+                borderColor: "#f56565",
+                backgroundColor: "rgba(245, 101, 101, 0.1)",
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#f56565",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+              },
+              {
+                label: "📈 Gewinn nach Steuern",
+                data: netProfitData,
+                borderColor: "#4299e1",
+                backgroundColor: "rgba(66, 153, 225, 0.1)",
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#4299e1",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+              },
+              {
+                label: "💵 Kassenbestand",
+                data: cashData,
+                borderColor: "#ed8936",
+                backgroundColor: "rgba(237, 137, 54, 0.1)",
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#ed8936",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+                borderDash: [5, 5], // Dashed line for cash
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  font: { size: 13 },
+                  padding: 15,
+                  usePointStyle: true,
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      context.parsed.y.toFixed(2) +
+                      " M"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toFixed(1) + " M";
+                  },
+                  font: { size: 12 },
+                },
+                title: {
+                  display: true,
+                  text: "Betrag (M)",
+                  font: { size: 13, weight: "bold" },
+                },
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                ticks: {
+                  font: { size: 12 },
+                },
+                title: {
+                  display: true,
+                  text: "Quartale",
+                  font: { size: 13, weight: "bold" },
+                },
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+
+        // ========================================
+        // ENHANCED: GuV COMPONENTS COMPARISON CHART
+        // ========================================
+        const guvComponentsCtx = document
+          .getElementById("guvComponentsChart")
+          .getContext("2d");
+
+        const grossProfitData = allResults.map((r) => r.gross_profit);
+        const ebitData = allResults.map((r) => r.ebit);
+        const pbtData = allResults.map((r) => r.profit_before_tax);
+
+        charts.guvComponents = new Chart(guvComponentsCtx, {
+          type: "bar",
+          data: {
+            labels: quarters,
+            datasets: [
+              {
+                label: "Bruttoergebnis",
+                data: grossProfitData,
+                backgroundColor: "rgba(72, 187, 120, 0.7)",
+                borderColor: "#48bb78",
+                borderWidth: 2,
+              },
+              {
+                label: "EBIT",
+                data: ebitData,
+                backgroundColor: "rgba(66, 153, 225, 0.7)",
+                borderColor: "#4299e1",
+                borderWidth: 2,
+              },
+              {
+                label: "Gewinn vor Steuern",
+                data: pbtData,
+                backgroundColor: "rgba(237, 137, 54, 0.7)",
+                borderColor: "#ed8936",
+                borderWidth: 2,
+              },
+              {
+                label: "Gewinn nach Steuern",
+                data: netProfitData,
+                backgroundColor: "rgba(56, 161, 105, 0.7)",
+                borderColor: "#38a169",
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  font: { size: 12 },
+                  padding: 12,
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      context.parsed.y.toFixed(2) +
+                      " M"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toFixed(1) + " M";
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // ========================================
+        // ENHANCED: COST BREAKDOWN PIE CHART (with Depreciation, Interest, Tax)
+        // ========================================
+        const costBreakdownCtx2 = document
+          .getElementById("costBreakdownChart")
+          .getContext("2d");
+        const totalHerstellung = allResults.reduce(
+          (sum, r) => sum + r.herstellungskosten,
+          0
+        );
+        const totalOverhead = allResults.reduce(
+          (sum, r) => sum + r.overhead_cost,
+          0
+        );
+        const totalMarketing = allResults.reduce(
+          (sum, r) => sum + r.marketing_cost,
+          0
+        );
+        const totalDepreciation = allResults.reduce(
+          (sum, r) => sum + r.depreciation,
+          0
+        );
+        const totalInterest = allResults.reduce(
+          (sum, r) => sum + r.interest,
+          0
+        );
+        const totalTax = allResults.reduce((sum, r) => sum + r.tax, 0);
+
+        charts.costBreakdown = new Chart(costBreakdownCtx2, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "Herstellungskosten",
+              "Gemeinkosten",
+              "Marketing",
+              "Abschreibungen",
+              "Zinsen",
+              "Steuern",
+            ],
+            datasets: [
+              {
+                data: [
+                  totalHerstellung,
+                  totalOverhead,
+                  totalMarketing,
+                  totalDepreciation,
+                  totalInterest,
+                  totalTax,
+                ],
+                backgroundColor: [
+                  "rgba(245, 101, 101, 0.8)", // Herstellung - Red
+                  "rgba(66, 153, 225, 0.8)", // Gemeinkosten - Blue
+                  "rgba(153, 102, 255, 0.8)", // Marketing - Purple
+                  "rgba(237, 137, 54, 0.8)", // Abschreibungen - Orange
+                  "rgba(197, 48, 48, 0.8)", // Zinsen - Dark Red
+                  "rgba(255, 206, 86, 0.8)", // Steuern - Yellow
+                ],
+                borderColor: "#fff",
+                borderWidth: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "right",
+                labels: {
+                  font: { size: 12 },
+                  padding: 15,
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const label = context.label || "";
+                    const value = context.parsed;
+                    const total = context.dataset.data.reduce(
+                      (a, b) => a + b,
+                      0
+                    );
+                    const percentage = ((value / total) * 100).toFixed(1);
+                    return (
+                      label +
+                      ": " +
+                      value.toFixed(2) +
+                      " M (" +
+                      percentage +
+                      "%)"
+                    );
+                  },
+                  afterLabel: function (context) {
+                    const idx = context.dataIndex;
+                    if (idx === 3) return "(nicht cash-wirksam)";
+                    if (idx === 4 || idx === 5) return "(cash-wirksam)";
+                    return "";
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Kostenverteilung über alle Quartale",
+                font: { size: 14, weight: "bold" },
+              },
+            },
+          },
+        });
+
+        // ========================================
+        // CASH FLOW CHART (Area Chart)
+        // ========================================
+        const cashFlowCtx = document
+          .getElementById("cashFlowChart")
+          .getContext("2d");
+        // cashData already declared above - reuse it
+        charts.cashFlow = new Chart(cashFlowCtx, {
+          type: "line",
+          data: {
+            labels: quarters,
+            datasets: [
+              {
+                label: "Kassenbestand (M)",
+                data: cashData,
+                borderColor: "#48bb78",
+                backgroundColor: "rgba(72, 187, 120, 0.2)",
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: "#48bb78",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  font: { size: 12 },
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      context.parsed.y.toFixed(2) +
+                      " M"
+                    );
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Kassenbestand-Entwicklung über alle Quartale",
+                font: { size: 14, weight: "bold" },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toFixed(1) + " M";
+                  },
+                },
+                title: {
+                  display: true,
+                  text: "Kasse (M)",
+                  font: { size: 12, weight: "bold" },
+                },
+              },
+            },
+          },
+        });
+
+        // ========================================
+        // PRIORITY 2: STACKED BAR CHART (Quarterly Breakdown)
+        // ========================================
+        const stackedBarCtx = document
+          .getElementById("stackedBarChart")
+          .getContext("2d");
+
+        const materialData = allResults.map((r) => r.material_cost);
+        const productionData = allResults.map((r) => r.production_cost);
+        const assemblyData = allResults.map((r) => r.assembly_cost);
+        const overheadData = allResults.map((r) => r.overhead_cost);
+        const marketingData = allResults.map((r) => r.marketing_cost);
+        const depreciationData = allResults.map((r) => r.depreciation);
+        const interestData = allResults.map((r) => r.interest);
+        const taxData = allResults.map((r) => r.tax);
+
+        charts.stackedBar = new Chart(stackedBarCtx, {
+          type: "bar",
+          data: {
+            labels: quarters,
+            datasets: [
+              {
+                label: "Material",
+                data: materialData,
+                backgroundColor: "rgba(255, 99, 132, 0.8)",
+                borderColor: "rgba(255, 99, 132, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Fertigung",
+                data: productionData,
+                backgroundColor: "rgba(54, 162, 235, 0.8)",
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Montage",
+                data: assemblyData,
+                backgroundColor: "rgba(255, 206, 86, 0.8)",
+                borderColor: "rgba(255, 206, 86, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Gemeinkosten",
+                data: overheadData,
+                backgroundColor: "rgba(75, 192, 192, 0.8)",
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Marketing",
+                data: marketingData,
+                backgroundColor: "rgba(153, 102, 255, 0.8)",
+                borderColor: "rgba(153, 102, 255, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Abschreibungen",
+                data: depreciationData,
+                backgroundColor: "rgba(237, 137, 54, 0.8)",
+                borderColor: "rgba(237, 137, 54, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Zinsen",
+                data: interestData,
+                backgroundColor: "rgba(197, 48, 48, 0.8)",
+                borderColor: "rgba(197, 48, 48, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Steuern",
+                data: taxData,
+                backgroundColor: "rgba(255, 159, 64, 0.8)",
+                borderColor: "rgba(255, 159, 64, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: {
+                  font: { size: 11 },
+                  padding: 10,
+                  boxWidth: 15,
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      context.parsed.y.toFixed(2) +
+                      " M"
+                    );
+                  },
+                  footer: function (tooltipItems) {
+                    let sum = 0;
+                    tooltipItems.forEach((item) => {
+                      sum += item.parsed.y;
+                    });
+                    return "Gesamt: " + sum.toFixed(2) + " M";
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Detaillierte Kostenaufschlüsselung pro Quartal",
+                font: { size: 15, weight: "bold" },
+              },
+            },
+            scales: {
+              x: {
+                stacked: true,
+                ticks: {
+                  font: { size: 12 },
+                },
+              },
+              y: {
+                stacked: true,
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return value.toFixed(1) + " M";
+                  },
+                  font: { size: 12 },
+                },
+                title: {
+                  display: true,
+                  text: "Kosten (M)",
+                  font: { size: 13, weight: "bold" },
+                },
+              },
+            },
+          },
+        });
+
+        // Show charts section
+        console.log("All 7 charts created successfully!");
+        console.log("Showing charts section...");
+        const chartsSection = document.getElementById("charts-section");
+        chartsSection.style.display = "block";
+        console.log("Charts section display:", chartsSection.style.display);
+
+        // Scroll to charts section
+        setTimeout(() => {
+          chartsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 500);
+      }
+
+      async function startGame() {
+        console.log("startGame() called");
+        try {
+          const response = await fetch("/api/start_game", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ game_id: gameId }),
+          });
+
+          console.log("Response received:", response.status);
+          const data = await response.json();
+          console.log("Data received:", data);
+
+          if (data.success) {
+            document.getElementById("start-btn").style.display = "none";
+            document.getElementById("simulate-btn").style.display =
+              "inline-block";
+            document.getElementById("current-quarter-decision").style.display =
+              "block";
+            updateStatus(data.initial_state);
+            updateDecisionQuarterDisplay(1);
+            showAlert(
+              "Spiel gestartet! Treffen Sie Ihre Entscheidungen für Quartal 1.",
+              "success"
+            );
+          } else {
+            console.error("Start game failed:", data);
+            showAlert("Fehler beim Starten des Spiels", "error");
+          }
+        } catch (error) {
+          console.error("Error in startGame():", error);
+          showAlert("Fehler: " + error.message, "error");
+        }
+      }
+
+        async function simulateQuarter() {
+            if (currentQuarter >= 4) {
+                showAlert('Spiel beendet! Alle 4 Quartale wurden gespielt.', 'info');
+                return;
+            }
+
+            const salesPrice = parseFloat(document.getElementById('sales-price').value);
+            const marketingBudget = parseFloat(document.getElementById('marketing-budget').value);
+            const productionLots = parseInt(document.getElementById('production-lots').value);
+            const materialPurchaseLots = parseInt(document.getElementById('material-purchase').value);
+            const materialFactor = parseFloat(document.getElementById('material-factor').value);
+            const overheadFactor = parseFloat(document.getElementById('overhead-factor').value);
+
+            const response = await fetch('/api/simulate_quarter', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    game_id: gameId,
+                    sales_price: salesPrice,
+                    marketing_budget: marketingBudget,
+                    production_lots: productionLots,
+                    material_purchase_lots: materialPurchaseLots,
+                    material_market_factor: materialFactor,
+                    overhead_factor: overheadFactor
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                currentQuarter++;
+                document.getElementById('current-quarter').textContent = currentQuarter;
+                allResults.push(data.result);
+
+                updateStatus(data.current_state);
+                displayQuarterResult(data.result);
+                document.getElementById('results-section').style.display = 'block';
+
+                if (currentQuarter >= 4) {
+                    document.getElementById('simulate-btn').disabled = true;
+                    document.getElementById('export-btn').style.display = 'inline-block';
+                    // Hide decision quarter display when game is complete
+                    document.getElementById('current-quarter-decision').style.display = 'none';
+                    
+                    // UX IMPROVEMENT: Collapse quarterly results to focus on summary
+                    setTimeout(() => {
+                        document.getElementById('results-section').classList.add('collapsed');
+                        document.getElementById('jump-to-summary-btn').style.display = 'block';
+                    }, 1500); // Small delay so user sees Q4 result briefly
+
+                    await showSummary();
+                } else {
+                    // Update for next quarter
+                    updateDecisionQuarterDisplay(currentQuarter + 1);
+                }
+            }
+        }function updateDecisionQuarterDisplay(quarterNumber) {
+        const decisionQuarterElement = document.getElementById(
+          "decision-quarter-number"
+        );
+        decisionQuarterElement.textContent = `Quartal ${quarterNumber}`;
+
+        // Add a subtle animation
+        decisionQuarterElement.style.animation = "none";
+        setTimeout(() => {
+          decisionQuarterElement.style.animation = "pulse 0.5s ease-in-out";
+        }, 10);
+      }
+
+      function updateStatus(state) {
+        document.getElementById("cash").textContent = state.cash.toFixed(2);
+        document.getElementById("receivables").textContent =
+          state.accounts_receivable.toFixed(2);
+        document.getElementById("raw-material").textContent =
+          state.raw_material_inventory;
+        document.getElementById("wip").textContent = state.work_in_progress;
+        document.getElementById("finished-goods").textContent =
+          state.finished_goods_inventory;
+      }
+
+      function displayQuarterResult(result) {
+        const resultsDiv = document.getElementById("quarter-results");
+
+        const profitClass = result.net_profit >= 0 ? "positive" : "negative";
+
+        const resultHTML = `
+                <div style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Quartal ${
+                      result.quarter
+                    }</h3>
+                    <p style="color: #718096; font-size: 0.9em; margin-bottom: 15px;">💡 Klicken Sie auf die Werte, um die Berechnungen zu sehen</p>
+
+                    <table class="results-table">
+                        <tr>
+                            <td><strong>Verkaufspreis</strong></td>
+                            <td>${result.sales_price.toFixed(2)} M/Einheit</td>
+                            <td><strong>Absatzmenge</strong></td>
+                            <td>${result.sales_volume} Lose</td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-revenue-q${
+                          result.quarter
+                        }')">
+                            <td><strong>Umsatz</strong></td>
+                            <td class="positive" colspan="3">${result.sales_revenue.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-revenue-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-revenue-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Umsatzberechnung - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Umsatz = Verkaufspreis × Absatzmenge
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Ihre Entscheidung: Verkaufspreis = <span class="value-highlight">${result.sales_price.toFixed(
+                                              2
+                                            )} M</span> pro Einheit
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Marktbedingte Nachfrage: Absatzmenge = <span class="value-highlight">${
+                                              result.sales_volume
+                                            } Lose</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Berechnung: <span class="value-highlight">${result.sales_price.toFixed(
+                                              2
+                                            )} M</span> × <span class="value-highlight">${
+          result.sales_volume
+        }</span> = <strong>${result.sales_revenue.toFixed(2)} M</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">💡 Hinweis:</div>
+                                    <div class="formula" style="background: #e6f7ff; border-color: #3182ce;">
+                                        Die Nachfrage wird durch Ihren Preis, Marketinginvestitionen und Wettbewerbspreise beeinflusst.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-herstellung-q${
+                          result.quarter
+                        }')">
+                            <td><strong>Herstellungskosten</strong></td>
+                            <td class="negative" colspan="3">${result.herstellungskosten.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-herstellung-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-herstellung-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">🏭 Herstellungskosten - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Herstellungskosten = Materialkosten + Fertigungskosten + Montagekosten
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Materialkosten: <span class="value-highlight">${
+                                              result.material_purchase_lots
+                                            } Lose</span> × <span class="value-highlight">3.00 M</span> = <strong>${result.material_cost.toFixed(
+          2
+        )} M</strong>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Fertigungskosten (Stufe 1): <span class="value-highlight">${
+                                              result.production_lots
+                                            } Lose</span> × <span class="value-highlight">3.00 M</span> = <strong>${result.production_cost.toFixed(
+          2
+        )} M</strong>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Montagekosten (Stufe 2): Fertige Produkte × <span class="value-highlight">1.00 M</span> = <strong>${result.assembly_cost.toFixed(
+                                              2
+                                            )} M</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label">Gesamtberechnung:</div>
+                                    <div class="formula">
+                                        ${result.material_cost.toFixed(
+                                          2
+                                        )} + ${result.production_cost.toFixed(
+          2
+        )} + ${result.assembly_cost.toFixed(
+          2
+        )} = <strong>${result.herstellungskosten.toFixed(2)} M</strong>
+                                    </div>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-gross-q${
+                          result.quarter
+                        }')">
+                            <td><strong>= Bruttoergebnis</strong></td>
+                            <td class="${
+                              result.gross_profit >= 0 ? "positive" : "negative"
+                            }" colspan="3">${result.gross_profit.toFixed(
+          2
+        )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-gross-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-gross-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Bruttoergebnis - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Bruttoergebnis = Umsatzerlöse - Herstellungskosten
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Umsatzerlöse: <span class="value-highlight">${result.sales_revenue.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Herstellungskosten: <span class="value-highlight">${result.herstellungskosten.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Differenz: <span class="value-highlight">${result.sales_revenue.toFixed(
+                                              2
+                                            )} M</span> - <span class="value-highlight">${result.herstellungskosten.toFixed(
+          2
+        )} M</span> = <strong>${result.gross_profit.toFixed(2)} M</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>Gemeinkosten</strong></td>
+                            <td colspan="3">${result.overhead_cost.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Marketing</strong></td>
+                            <td colspan="3">${result.marketing_cost.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-depreciation-q${
+                          result.quarter
+                        }')">
+                            <td><strong>Abschreibungen</strong></td>
+                            <td style="color: #d97706; font-weight: 600;" colspan="3">${result.depreciation.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-depreciation-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-depreciation-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📉 Abschreibungen - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Was sind Abschreibungen?</div>
+                                    <div class="formula" style="background: #fef5e7; border-color: #d97706;">
+                                        Buchhalterische Erfassung der Wertminderung von Anlagevermögen (Gebäude, Maschinen, BGA)
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Gebäude: <span class="value-highlight">0.25 M</span> pro Quartal
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Maschinen: <span class="value-highlight">1.25 M</span> pro Quartal
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            BGA (Betriebs- und Geschäftsausstattung): <span class="value-highlight">0.75 M</span> pro Quartal
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">Σ</span>
+                                            Gesamt: <strong>${result.depreciation.toFixed(
+                                              2
+                                            )} M</strong> pro Quartal
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #e6f7ff; border-color: #3182ce;">
+                                        ❌ KEIN Geld fließt aus der Kasse!<br>
+                                        ✅ Nur buchhalterisch - reduziert den Gewinn
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-ebit-q${
+                          result.quarter
+                        }')">
+                            <td><strong>= Betriebsergebnis (EBIT)</strong></td>
+                            <td class="${
+                              result.ebit >= 0 ? "positive" : "negative"
+                            }" colspan="3">${result.ebit.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-ebit-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-ebit-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💼 Betriebsergebnis (EBIT) - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        EBIT = Bruttoergebnis - Gemeinkosten - Marketing - Abschreibungen
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Bruttoergebnis: <span class="value-highlight">${result.gross_profit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Gemeinkosten: <span class="value-highlight">${result.overhead_cost.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Marketing: <span class="value-highlight">${result.marketing_cost.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">4</span>
+                                            Abschreibungen: <span class="value-highlight">${result.depreciation.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">Σ</span>
+                                            EBIT: ${result.gross_profit.toFixed(
+                                              2
+                                            )} - ${result.overhead_cost.toFixed(
+          2
+        )} - ${result.marketing_cost.toFixed(
+          2
+        )} - ${result.depreciation.toFixed(2)} = <strong>${result.ebit.toFixed(
+          2
+        )} M</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-interest-q${
+                          result.quarter
+                        }')">
+                            <td><strong>Zinsen</strong></td>
+                            <td class="negative" colspan="3">${result.interest.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-interest-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-interest-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💳 Zinsen - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Was sind Zinsen?</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        Finanzierungskosten für den Kredit von 100 M
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Kreditvolumen: <span class="value-highlight">100 M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Zinssatz: <span class="value-highlight">10% p.a.</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Jährliche Zinsen: 100 M × 10% = <span class="value-highlight">10 M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">4</span>
+                                            Pro Quartal: 10 M ÷ 4 = <strong>${result.interest.toFixed(
+                                              2
+                                            )} M</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        ✅ Geld fließt aus der Kasse!<br>
+                                        ✅ Reduziert die Liquidität
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-pbt-q${
+                          result.quarter
+                        }')">
+                            <td><strong>= Gewinn vor Steuern</strong></td>
+                            <td class="${
+                              result.profit_before_tax >= 0
+                                ? "positive"
+                                : "negative"
+                            }" colspan="3">${result.profit_before_tax.toFixed(
+          2
+        )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-pbt-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-pbt-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Gewinn vor Steuern - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Gewinn vor Steuern = EBIT - Zinsen
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            EBIT: <span class="value-highlight">${result.ebit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Zinsen: <span class="value-highlight">${result.interest.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Differenz: ${result.ebit.toFixed(
+                                              2
+                                            )} - ${result.interest.toFixed(
+          2
+        )} = <strong>${result.profit_before_tax.toFixed(2)} M</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-tax-q${
+                          result.quarter
+                        }')">
+                            <td><strong>Steuern (33,33%)</strong></td>
+                            <td class="negative" colspan="3">${result.tax.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-tax-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-tax-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💰 Steuern - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Was sind Steuern?</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        Körperschaftssteuer auf Unternehmensgewinne (33,33% = 1/3 des Gewinns vor Steuern)
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Gewinn vor Steuern: <span class="value-highlight">${result.profit_before_tax.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            ${
+                                              result.profit_before_tax > 0
+                                                ? `Steuersatz: <span class="value-highlight">33,33%</span>`
+                                                : `Kein Gewinn = <span class="value-highlight">Keine Steuern</span>`
+                                            }
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            ${
+                                              result.profit_before_tax > 0
+                                                ? `Berechnung: ${result.profit_before_tax.toFixed(
+                                                    2
+                                                  )} × 0,3333 = <strong>${result.tax.toFixed(
+                                                    2
+                                                  )} M</strong>`
+                                                : `Steuern = <strong>0,00 M</strong>`
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        ✅ Geld fließt aus der Kasse (bei Gewinn)!<br>
+                                        ✅ Reduziert die Liquidität
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-inventory-q${
+                          result.quarter
+                        }')">
+                            <td colspan="4">
+                                <div id="exp-inventory-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <div class="formula-label" style="margin-top: 15px;">📦 Ihre Entscheidungen:</div>
+                                    <div class="formula" style="background: #fef5e7; border-color: #d97706;">
+                                        <strong>Einkauf:</strong> ${
+                                          result.material_purchase_lots
+                                        } Lose Rohmaterial<br>
+                                        <strong>Produktion:</strong> ${
+                                          result.production_lots
+                                        } Lose gestartet
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">📊 Lagerbestand Rohmaterial (Fluss):</div>
+                                    <div class="formula" style="background: linear-gradient(to right, #e6f7ff 0%, #f0f9ff 100%); border-color: #3182ce; position: relative;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                            <div style="text-align: center; flex: 1; min-width: 100px;">
+                                                <div style="font-size: 0.85em; color: #718096; margin-bottom: 5px;">Anfangsbestand</div>
+                                                <div style="font-size: 1.3em; font-weight: bold; color: #2d3748;">
+                                                    ${(() => {
+                                                      // Calculate beginning inventory
+                                                      const beginning =
+                                                        result.raw_material_inventory +
+                                                        result.production_lots -
+                                                        result.material_purchase_lots;
+                                                      return beginning;
+                                                    })()} Lose
+                                                </div>
+                                            </div>
+
+                                            <div style="color: #48bb78; font-size: 1.5em;">→</div>
+
+                                            <div style="text-align: center; flex: 1; min-width: 100px;">
+                                                <div style="font-size: 0.85em; color: #718096; margin-bottom: 5px;">+ Einkauf</div>
+                                                <div style="font-size: 1.3em; font-weight: bold; color: #48bb78;">
+                                                    +${
+                                                      result.material_purchase_lots
+                                                    } Lose
+                                                </div>
+                                            </div>
+
+                                            <div style="color: #48bb78; font-size: 1.5em;">→</div>
+
+                                            <div style="text-align: center; flex: 1; min-width: 100px;">
+                                                <div style="font-size: 0.85em; color: #718096; margin-bottom: 5px;">- Produktion</div>
+                                                <div style="font-size: 1.3em; font-weight: bold; color: #e53e3e;">
+                                                    -${
+                                                      result.production_lots
+                                                    } Lose
+                                                </div>
+                                            </div>
+
+                                            <div style="color: #667eea; font-size: 1.5em;">=</div>
+
+                                            <div style="text-align: center; flex: 1; min-width: 100px; background: #667eea; color: white; padding: 10px; border-radius: 8px;">
+                                                <div style="font-size: 0.85em; margin-bottom: 5px;">Endbestand</div>
+                                                <div style="font-size: 1.3em; font-weight: bold;">
+                                                    ${
+                                                      result.raw_material_inventory
+                                                    } Lose
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #cbd5e0; font-size: 0.9em; color: #4a5568;">
+                                            💡 <strong>Hinweis:</strong>
+                                            ${
+                                              result.material_purchase_lots ===
+                                                0 && result.production_lots > 0
+                                                ? `Sie haben in diesem Quartal kein neues Material gekauft, aber aus dem Lagerbestand von <strong>${(() => {
+                                                    const beginning =
+                                                      result.raw_material_inventory +
+                                                      result.production_lots -
+                                                      result.material_purchase_lots;
+                                                    return beginning;
+                                                  })()} Losen</strong> produziert.`
+                                                : result.material_purchase_lots >
+                                                  result.production_lots
+                                                ? `Sie haben mehr eingekauft als produziert. Die überschüssigen <strong>${
+                                                    result.material_purchase_lots -
+                                                    result.production_lots
+                                                  } Lose</strong> werden ins nächste Quartal übertragen.`
+                                                : "Der Lagerbestand wird automatisch ins nächste Quartal übertragen."
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-profit-q${
+                          result.quarter
+                        }')">
+                            <td><strong>= GEWINN NACH STEUERN</strong></td>
+                            <td class="${profitClass}" colspan="3">${result.net_profit.toFixed(
+          2
+        )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div id="exp-profit-q${
+                                  result.quarter
+                                }" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-profit-q${
+                                      result.quarter
+                                    }')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">🎯 Gewinn nach Steuern - Quartal ${
+                                      result.quarter
+                                    }</h4>
+
+                                    <div class="formula-label">Zusammenfassung GuV:</div>
+                                    <div class="formula">
+                                        Umsatzerlöse → Bruttoergebnis → EBIT → Gewinn vor Steuern → Gewinn nach Steuern
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Umsatzerlöse: <span class="value-highlight">${result.sales_revenue.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Herstellungskosten: <span class="value-highlight">-${result.herstellungskosten.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            = Bruttoergebnis: <span class="value-highlight">${result.gross_profit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">4</span>
+                                            Gemeinkosten + Marketing: <span class="value-highlight">-${(
+                                              result.overhead_cost +
+                                              result.marketing_cost
+                                            ).toFixed(2)} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">5</span>
+                                            Abschreibungen: <span class="value-highlight">-${result.depreciation.toFixed(
+                                              2
+                                            )} M</span> (nicht cash-wirksam)
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">6</span>
+                                            = EBIT: <span class="value-highlight">${result.ebit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">7</span>
+                                            Zinsen: <span class="value-highlight">-${result.interest.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">8</span>
+                                            = Gewinn vor Steuern: <span class="value-highlight">${result.profit_before_tax.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">9</span>
+                                            Steuern (33,33%): <span class="value-highlight">-${result.tax.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">✓</span>
+                                            = <strong>Gewinn nach Steuern: ${result.net_profit.toFixed(
+                                              2
+                                            )} M</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">💡 Interpretation:</div>
+                                    <div class="formula" style="background: ${
+                                      result.net_profit >= 0
+                                        ? "#c6f6d5"
+                                        : "#fed7d7"
+                                    }; border-color: ${
+          result.net_profit >= 0 ? "#38a169" : "#e53e3e"
+        };">
+                                        ${
+                                          result.net_profit >= 0
+                                            ? `✅ Gewinn! Sie haben in diesem Quartal <strong>${result.net_profit.toFixed(
+                                                2
+                                              )} M</strong> nach Steuern verdient.`
+                                            : `⚠️ Verlust! Sie haben in diesem Quartal <strong>${Math.abs(
+                                                result.net_profit
+                                              ).toFixed(
+                                                2
+                                              )} M</strong> verloren.`
+                                        }
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 10px;">💵 Liquidität:</div>
+                                    <div class="formula" style="background: #f7fafc; border-color: #667eea;">
+                                        Kassenbestand: <strong>${result.cash_beginning.toFixed(
+                                          2
+                                        )} M</strong> → <strong>${result.cash_ending.toFixed(
+          2
+        )} M</strong><br>
+                                        Forderungen (nächstes Quartal): <strong>${result.accounts_receivable.toFixed(
+                                          2
+                                        )} M</strong>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+
+        resultsDiv.innerHTML += resultHTML;
+      }
+
+        function toggleExplanation(id) {
+            const explanation = document.getElementById(id);
+            const allExplanations = document.querySelectorAll('.calculation-explanation');
+
+            // Close all other explanations
+            allExplanations.forEach(exp => {
+                if (exp.id !== id) {
+                    exp.classList.remove('active');
+                }
+            });
+
+            // Toggle current explanation
+            explanation.classList.toggle('active');
+        }
+
+        // UX Helper Functions
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            section.classList.toggle('collapsed');
+        }
+
+        function scrollToSummary() {
+            const summarySection = document.getElementById('summary-section');
+            summarySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Hide button after use
+            document.getElementById('jump-to-summary-btn').style.display = 'none';
+        }
+
+      async function showSummary() {
+        const response = await fetch(`/api/get_summary?game_id=${gameId}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const summaryDiv = document.getElementById("summary-content");
+          const summary = data.summary;
+
+          // Calculate quarterly data for detailed breakdown
+          const quarterlyRevenues = allResults.map((r) => r.sales_revenue);
+          const quarterlyProfits = allResults.map((r) => r.net_profit);
+          const quarterlyHerstellung = allResults.map(
+            (r) => r.herstellungskosten
+          );
+          const quarterlyGross = allResults.map((r) => r.gross_profit);
+          const quarterlyEBIT = allResults.map((r) => r.ebit);
+
+          const summaryHTML = `
+                    <div class="alert alert-success">
+                        <h3>🎉 Herzlichen Glückwunsch! Sie haben das Spiel abgeschlossen.</h3>
+                        <p style="margin-top: 10px; font-size: 0.95em;">💡 Klicken Sie auf die Kennzahlen unten, um die detaillierten Berechnungen zu sehen.</p>
+                    </div>
+                    <table class="results-table">
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-revenue')">
+                            <td><strong>Gesamtumsatz</strong></td>
+                            <td class="positive">${summary.total_revenue.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-revenue" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-revenue')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Berechnung des Gesamtumsatzes</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Gesamtumsatz = Σ (Verkaufspreis × Absatzmenge) für alle Quartale
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        ${allResults
+                                          .map(
+                                            (r, i) => `
+                                            <div class="step">
+                                                <span class="step-number">${
+                                                  i + 1
+                                                }</span>
+                                                Quartal ${
+                                                  r.quarter
+                                                }: <span class="value-highlight">${r.sales_price.toFixed(
+                                              2
+                                            )} M</span> × <span class="value-highlight">${
+                                              r.sales_volume
+                                            } Lose</span> = <strong>${r.sales_revenue.toFixed(
+                                              2
+                                            )} M</strong>
+                                            </div>
+                                        `
+                                          )
+                                          .join("")}
+                                    </div>
+
+                                    <div class="formula-label">Gesamtberechnung:</div>
+                                    <div class="formula">
+                                        ${quarterlyRevenues
+                                          .map((r) => r.toFixed(2))
+                                          .join(
+                                            " M + "
+                                          )} M = <strong>${summary.total_revenue.toFixed(
+            2
+          )} M</strong>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Herstellungskosten</strong></td>
+                            <td class="negative">${summary.total_herstellungskosten.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>= Bruttoergebnis</strong></td>
+                            <td class="${
+                              summary.total_gross_profit >= 0
+                                ? "positive"
+                                : "negative"
+                            }">${summary.total_gross_profit.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gemeinkosten</strong></td>
+                            <td class="negative">${(
+                              summary.total_overhead + summary.total_marketing
+                            ).toFixed(2)} M</td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-depreciation-summary')">
+                            <td><strong>Abschreibungen</strong></td>
+                            <td style="color: #d97706; font-weight: 600;">${summary.total_depreciation.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-depreciation-summary" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-depreciation-summary')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📉 Abschreibungen (Gesamt)</h4>
+
+                                    <div class="formula-label">Pro Quartal:</div>
+                                    <div class="formula">
+                                        Gebäude (0,25 M) + Maschinen (1,25 M) + BGA (0,75 M) = 2,25 M
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        ${allResults
+                                          .map(
+                                            (r, i) => `
+                                            <div class="step">
+                                                <span class="step-number">${
+                                                  i + 1
+                                                }</span>
+                                                Quartal ${
+                                                  r.quarter
+                                                }: <span class="value-highlight">${r.depreciation.toFixed(
+                                              2
+                                            )} M</span>
+                                            </div>
+                                        `
+                                          )
+                                          .join("")}
+                                    </div>
+
+                                    <div class="formula-label">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #e6f7ff; border-color: #3182ce;">
+                                        ❌ KEIN Geld fließt aus der Kasse! Nur buchhalterisch.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>= Betriebsergebnis (EBIT)</strong></td>
+                            <td class="${
+                              summary.total_ebit >= 0 ? "positive" : "negative"
+                            }">${summary.total_ebit.toFixed(2)} M</td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-interest-summary')">
+                            <td><strong>Zinsen</strong></td>
+                            <td class="negative">${summary.total_interest.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-interest-summary" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-interest-summary')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💳 Zinsen (Gesamt)</h4>
+
+                                    <div class="formula-label">Berechnung:</div>
+                                    <div class="formula">
+                                        Kredit: 100 M × 10% Zinssatz = 10 M/Jahr<br>
+                                        Pro Quartal: 10 M ÷ 4 = 2,5 M
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        ${allResults
+                                          .map(
+                                            (r, i) => `
+                                            <div class="step">
+                                                <span class="step-number">${
+                                                  i + 1
+                                                }</span>
+                                                Quartal ${
+                                                  r.quarter
+                                                }: <span class="value-highlight">${r.interest.toFixed(
+                                              2
+                                            )} M</span>
+                                            </div>
+                                        `
+                                          )
+                                          .join("")}
+                                    </div>
+
+                                    <div class="formula-label">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        ✅ Geld fließt aus der Kasse!
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>= Gewinn vor Steuern</strong></td>
+                            <td class="${
+                              summary.total_profit_before_tax >= 0
+                                ? "positive"
+                                : "negative"
+                            }">${summary.total_profit_before_tax.toFixed(
+            2
+          )} M</td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-tax-summary')">
+                            <td><strong>Steuern (33,33%)</strong></td>
+                            <td class="negative">${summary.total_tax.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-tax-summary" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-tax-summary')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💰 Steuern (Gesamt)</h4>
+
+                                    <div class="formula-label">Berechnung:</div>
+                                    <div class="formula">
+                                        33,33% (1/3) des Gewinns vor Steuern (nur bei Gewinn)
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        ${allResults
+                                          .map(
+                                            (r, i) => `
+                                            <div class="step">
+                                                <span class="step-number">${
+                                                  i + 1
+                                                }</span>
+                                                Q${
+                                                  r.quarter
+                                                }: Gewinn vor Steuern <span class="value-highlight">${r.profit_before_tax.toFixed(
+                                              2
+                                            )} M</span> → Steuern <span class="value-highlight">${r.tax.toFixed(
+                                              2
+                                            )} M</span>
+                                            </div>
+                                        `
+                                          )
+                                          .join("")}
+                                    </div>
+
+                                    <div class="formula-label">⚠️ Wichtig:</div>
+                                    <div class="formula" style="background: #fed7d7; border-color: #e53e3e;">
+                                        ✅ Geld fließt aus der Kasse (bei Gewinn)!
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-profit')">
+                            <td><strong>= GEWINN NACH STEUERN</strong></td>
+                            <td class="${
+                              summary.total_net_profit >= 0
+                                ? "positive"
+                                : "negative"
+                            }">${summary.total_net_profit.toFixed(2)} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-profit" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-profit')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">🎯 Gewinn nach Steuern (Gesamt)</h4>
+
+                                    <div class="formula-label">GuV-Struktur:</div>
+                                    <div class="formula">
+                                        ${summary.total_revenue.toFixed(
+                                          2
+                                        )} M (Umsatz)<br>
+                                        - ${summary.total_herstellungskosten.toFixed(
+                                          2
+                                        )} M (Herstellung)<br>
+                                        = ${summary.total_gross_profit.toFixed(
+                                          2
+                                        )} M (Brutto)<br>
+                                        - ${(
+                                          summary.total_overhead +
+                                          summary.total_marketing
+                                        ).toFixed(2)} M (Gemeinkosten)<br>
+                                        - ${summary.total_depreciation.toFixed(
+                                          2
+                                        )} M (Abschreibungen)<br>
+                                        = ${summary.total_ebit.toFixed(
+                                          2
+                                        )} M (EBIT)<br>
+                                        - ${summary.total_interest.toFixed(
+                                          2
+                                        )} M (Zinsen)<br>
+                                        = ${summary.total_profit_before_tax.toFixed(
+                                          2
+                                        )} M (vor Steuern)<br>
+                                        - ${summary.total_tax.toFixed(
+                                          2
+                                        )} M (Steuern)<br>
+                                        = <strong>${summary.total_net_profit.toFixed(
+                                          2
+                                        )} M</strong> (nach Steuern)
+                                    </div>
+
+                                    <div class="formula-label">Quartalweise Beiträge:</div>
+                                    <div class="formula">
+                                        ${quarterlyProfits
+                                          .map(
+                                            (p, i) =>
+                                              `Q${i + 1}: ${p.toFixed(2)} M`
+                                          )
+                                          .join(
+                                            " + "
+                                          )} = <strong>${summary.total_net_profit.toFixed(
+            2
+          )} M</strong>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-avg-profit')">
+                            <td><strong>Durchschnittlicher Gewinn pro Quartal</strong></td>
+                            <td>${summary.average_profit_per_quarter.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-avg-profit" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-avg-profit')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Berechnung des durchschnittlichen Gewinns</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Durchschnittlicher Gewinn = Gesamtgewinn ÷ Anzahl Quartale
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Gesamtgewinn (nach Steuern): <span class="value-highlight">${summary.total_net_profit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Anzahl Quartale: <span class="value-highlight">${
+                                              summary.quarters_played
+                                            }</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Berechnung: <span class="value-highlight">${summary.total_net_profit.toFixed(
+                                              2
+                                            )} M</span> ÷ <span class="value-highlight">${
+            summary.quarters_played
+          }</span> = <strong>${summary.average_profit_per_quarter.toFixed(
+            2
+          )} M</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-cash')">
+                            <td><strong>Endbestand Kasse</strong></td>
+                            <td class="positive">${summary.final_cash.toFixed(
+                              2
+                            )} M</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-cash" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-cash')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">💵 Berechnung des Kassenbestands</h4>
+
+                                    <div class="formula-label">Formel (pro Quartal):</div>
+                                    <div class="formula">
+                                        Kasse Ende = Kasse Anfang + Forderungen - Cash-wirksame Kosten<br>
+                                        <small>Cash-wirksam: Material, Fertigung, Montage, Gemeinkosten, Marketing, Zinsen, Steuern</small><br>
+                                        <small>NICHT cash-wirksam: Abschreibungen</small>
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">Start</span>
+                                            Anfangsbestand: <span class="value-highlight">28.00 M</span>
+                                        </div>
+                                        ${allResults
+                                          .map((r, i) => {
+                                            const cashCosts =
+                                              r.herstellungskosten +
+                                              r.overhead_cost +
+                                              r.marketing_cost +
+                                              r.interest +
+                                              r.tax;
+                                            return `
+                                            <div class="step">
+                                                <span class="step-number">${
+                                                  i + 1
+                                                }</span>
+                                                Q${
+                                                  r.quarter
+                                                }: <span class="value-highlight">${r.cash_beginning.toFixed(
+                                              2
+                                            )} M</span> (Anfang) +
+                                                <span class="value-highlight">${r.accounts_receivable.toFixed(
+                                                  2
+                                                )} M</span> (Forderungen) -
+                                                <span class="value-highlight">${cashCosts.toFixed(
+                                                  2
+                                                )} M</span> (Cash-Kosten) =
+                                                <strong>${r.cash_ending.toFixed(
+                                                  2
+                                                )} M</strong>
+                                            </div>
+                                        `;
+                                          })
+                                          .join("")}
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">💡 Hinweise:</div>
+                                    <div class="formula" style="background: #fef5e7; border-color: #d97706;">
+                                        1. Die Umsätze werden im Folgequartal als Forderungen eingezahlt (Zahlungsziel 1 Quartal).<br>
+                                        2. Abschreibungen (${allResults[0]?.depreciation.toFixed(
+                                          2
+                                        )} M/Quartal) sind NICHT in den Kosten enthalten, da sie nicht cash-wirksam sind!
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="calculation-item" onclick="toggleExplanation('exp-ros')">
+                            <td><strong>Umsatzrendite</strong></td>
+                            <td>${summary.return_on_sales.toFixed(2)}%</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="exp-ros" class="calculation-explanation">
+                                    <span class="close-explanation" onclick="event.stopPropagation(); toggleExplanation('exp-ros')">×</span>
+                                    <h4 style="color: #2d3748; margin-bottom: 10px;">📊 Berechnung der Umsatzrendite (Return on Sales)</h4>
+
+                                    <div class="formula-label">Formel:</div>
+                                    <div class="formula">
+                                        Umsatzrendite (%) = (Gewinn nach Steuern ÷ Gesamtumsatz) × 100
+                                    </div>
+
+                                    <div class="calculation-steps">
+                                        <div class="step">
+                                            <span class="step-number">1</span>
+                                            Gewinn nach Steuern: <span class="value-highlight">${summary.total_net_profit.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">2</span>
+                                            Gesamtumsatz: <span class="value-highlight">${summary.total_revenue.toFixed(
+                                              2
+                                            )} M</span>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">3</span>
+                                            Division: <span class="value-highlight">${summary.total_net_profit.toFixed(
+                                              2
+                                            )}</span> ÷ <span class="value-highlight">${summary.total_revenue.toFixed(
+            2
+          )}</span> = <strong>${(
+            summary.total_net_profit / summary.total_revenue
+          ).toFixed(4)}</strong>
+                                        </div>
+                                        <div class="step">
+                                            <span class="step-number">4</span>
+                                            In Prozent: <span class="value-highlight">${(
+                                              summary.total_net_profit /
+                                              summary.total_revenue
+                                            ).toFixed(
+                                              4
+                                            )}</span> × 100 = <strong>${summary.return_on_sales.toFixed(
+            2
+          )}%</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="formula-label" style="margin-top: 15px;">💡 Interpretation:</div>
+                                    <div class="formula" style="background: #e6f7ff; border-color: #3182ce;">
+                                        Die Umsatzrendite zeigt, wie viel Gewinn nach Steuern pro Euro Umsatz erzielt wurde.
+                                        ${summary.return_on_sales.toFixed(
+                                          2
+                                        )}% bedeutet: Pro 1 M Umsatz wurden ${(
+            summary.return_on_sales / 100
+          ).toFixed(2)} M Gewinn nach Steuern erwirtschaftet.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                `;
+
+          summaryDiv.innerHTML = summaryHTML;
+          document.getElementById("summary-section").style.display = "block";
+
+          // Create charts after summary is displayed
+          createCharts();
+        }
+      }
+
+      async function exportResults() {
+        // Export as Excel file
+        const url = `/api/export_excel?game_id=${gameId}`;
+
+        // Create a temporary link and click it to download
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Factory_Ergebnisse.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        showAlert("Excel-Datei wird heruntergeladen...", "success");
+      }
+
+      function resetGame() {
+        // Generate new game ID
+        gameId = "game_" + Date.now();
+        currentQuarter = 0;
+        allResults = [];
+
+        // Reset status display
+        document.getElementById("current-quarter").textContent = "0";
+        document.getElementById("cash").textContent = "28.0";
+        document.getElementById("receivables").textContent = "26.0";
+        document.getElementById("raw-material").textContent = "2";
+        document.getElementById("wip").textContent = "2";
+        document.getElementById("finished-goods").textContent = "2";
+
+        // Reset input fields
+        document.getElementById("sales-price").value = "13.0";
+        document.getElementById("marketing-budget").value = "0";
+        document.getElementById("material-purchase").value = "2";
+        document.getElementById("production-lots").value = "2";
+        document.getElementById("material-factor").value = "1.0";
+        document.getElementById("overhead-factor").value = "1.0";
+
+        // Clear results
+        document.getElementById("quarter-results").innerHTML = "";
+        document.getElementById("summary-content").innerHTML = "";
+
+        // Destroy all charts
+        Object.keys(charts).forEach((key) => {
+          if (charts[key]) {
+            charts[key].destroy();
+            charts[key] = null;
+          }
+        });
+
+        // Hide/show appropriate sections and buttons
+        document.getElementById("results-section").style.display = "none";
+        document.getElementById("summary-section").style.display = "none";
+        document.getElementById("charts-section").style.display = "none";
+        document.getElementById("start-btn").style.display = "inline-block";
+        document.getElementById("simulate-btn").style.display = "none";
+        document.getElementById("simulate-btn").disabled = false;
+        document.getElementById("export-btn").style.display = "none";
+
+        // Reset and hide decision quarter display
+        document.getElementById("current-quarter-decision").style.display =
+          "none";
+        document.getElementById("decision-quarter-number").textContent =
+          "Quartal 1";
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        showAlert(
+          'Bereit für ein neues Spiel! Klicken Sie auf "Spiel Starten".',
+          "info"
+        );
+      }
+
+      function showAlert(message, type) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+
+        const container = document.querySelector(".container");
+        container.insertBefore(alertDiv, container.firstChild.nextSibling);
+
+        setTimeout(() => alertDiv.remove(), 5000);
+      }
+    </script>
+  </body>
+</html>

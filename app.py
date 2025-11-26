@@ -1,6 +1,7 @@
 """
 Flask Web Application for Factory Business Simulation
 Provides web-based interface for the game
+Includes Abschreibungen, Zinsen, and Steuern
 """
 
 from flask import Flask, render_template, request, jsonify, session, send_file
@@ -53,6 +54,11 @@ def start_game():
             'raw_material_inventory': simulator.raw_material_inventory,
             'work_in_progress': simulator.work_in_progress,
             'finished_goods_inventory': simulator.finished_goods_inventory
+        },
+        'financial_params': {
+            'depreciation_per_quarter': params.depreciation_per_quarter,
+            'interest_per_quarter': params.interest_per_quarter,
+            'tax_rate': params.tax_rate * 100
         }
     })
 
@@ -97,10 +103,16 @@ def simulate_quarter():
         'material_cost': result.material_cost,
         'production_cost': result.production_cost,
         'assembly_cost': result.assembly_cost,
+        'herstellungskosten': result.herstellungskosten,
         'overhead_cost': result.overhead_cost,
         'marketing_cost': result.marketing_cost,
-        'total_cost': result.total_cost,
+        'depreciation': result.depreciation,
+        'interest': result.interest,
+        'total_operating_cost': result.total_operating_cost,
         'gross_profit': result.gross_profit,
+        'ebit': result.ebit,
+        'profit_before_tax': result.profit_before_tax,
+        'tax': result.tax,
         'net_profit': result.net_profit,
         'raw_material_inventory': result.raw_material_inventory,
         'work_in_progress': result.work_in_progress,
@@ -141,7 +153,11 @@ def get_summary():
             {
                 'quarter': r.quarter,
                 'sales_revenue': r.sales_revenue,
-                'total_cost': r.total_cost,
+                'herstellungskosten': r.herstellungskosten,
+                'gross_profit': r.gross_profit,
+                'ebit': r.ebit,
+                'profit_before_tax': r.profit_before_tax,
+                'tax': r.tax,
                 'net_profit': r.net_profit,
                 'cash_ending': r.cash_ending
             }
@@ -171,7 +187,7 @@ def export_results():
 
 @app.route('/api/export_excel', methods=['GET'])
 def export_excel():
-    """Export game results as Excel file"""
+    """Export game results as Excel file with full GuV structure"""
     game_id = request.args.get('game_id', 'default')
 
     if game_id not in simulators:
@@ -183,7 +199,7 @@ def export_excel():
     # Create workbook
     wb = Workbook()
     ws = wb.active
-    ws.title = "Spielergebnisse"
+    ws.title = "GuV und Jahresabschluss"
 
     # Styling
     header_fill = PatternFill(start_color="667eea", end_color="667eea", fill_type="solid")
@@ -193,6 +209,7 @@ def export_excel():
 
     positive_fill = PatternFill(start_color="c6f6d5", end_color="c6f6d5", fill_type="solid")
     negative_fill = PatternFill(start_color="fed7d7", end_color="fed7d7", fill_type="solid")
+    highlight_fill = PatternFill(start_color="e6f3ff", end_color="e6f3ff", fill_type="solid")
 
     border = Border(
         left=Side(style='thin'),
@@ -202,175 +219,206 @@ def export_excel():
     )
 
     # Title section
-    ws.merge_cells('A1:H1')
-    ws['A1'] = "🏭 Factory Business Simulation - Spielergebnisse"
+    ws.merge_cells('A1:J1')
+    ws['A1'] = "🏭 Factory Business Simulation - Gewinn- und Verlustrechnung"
     ws['A1'].font = title_font
     ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
 
-    ws.merge_cells('A2:H2')
-    ws['A2'] = f"Planspiel BWL für BDE - WiSe 2025/26"
+    ws.merge_cells('A2:J2')
+    ws['A2'] = "Planspiel BWL für BDE - WiSe 2025/26"
     ws['A2'].font = subtitle_font
     ws['A2'].alignment = Alignment(horizontal='center')
 
-    ws.merge_cells('A3:H3')
+    ws.merge_cells('A3:J3')
     ws['A3'] = "Ostfalia Hochschule für angewandte Wissenschaften"
     ws['A3'].font = subtitle_font
     ws['A3'].alignment = Alignment(horizontal='center')
 
-    ws.merge_cells('A4:H4')
+    ws.merge_cells('A4:J4')
     ws['A4'] = f"Erstellt am: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
     ws['A4'].font = subtitle_font
     ws['A4'].alignment = Alignment(horizontal='center')
 
-    # Summary section
+    # GuV section - like in original Factory document
     row = 6
-    ws.merge_cells(f'A{row}:H{row}')
-    ws[f'A{row}'] = "📊 Jahresabschluss"
+    ws.merge_cells(f'A{row}:J{row}')
+    ws[f'A{row}'] = "📊 GEWINN- UND VERLUSTRECHNUNG (GuV)"
+    ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
+
+    row += 2
+    guv_headers = ['Position', 'Q1', 'Q2', 'Q3', 'Q4', 'GESAMT']
+    for col, header in enumerate(guv_headers, start=1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    row += 1
+    
+    # Umsatzerlöse
+    ws.cell(row=row, column=1, value="Umsatzerlöse").font = Font(bold=True)
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.sales_revenue).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).fill = positive_fill
+    ws.cell(row=row, column=6, value=summary['total_revenue']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True)
+    ws.cell(row=row, column=6).border = border
+    ws.cell(row=row, column=6).fill = positive_fill
+    row += 1
+    
+    # Herstellungskosten
+    ws.cell(row=row, column=1, value="Herstellungskosten").font = Font(bold=True)
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.herstellungskosten).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).fill = negative_fill
+    ws.cell(row=row, column=6, value=summary['total_herstellungskosten']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True)
+    ws.cell(row=row, column=6).border = border
+    ws.cell(row=row, column=6).fill = negative_fill
+    row += 1
+    
+    # Bruttoergebnis
+    ws.cell(row=row, column=1, value="= Bruttoergebnis").font = Font(bold=True, italic=True)
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.gross_profit).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).fill = highlight_fill
+        ws.cell(row=row, column=i).font = Font(bold=True)
+    ws.cell(row=row, column=6, value=summary['total_gross_profit']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, size=12)
+    ws.cell(row=row, column=6).border = border
+    ws.cell(row=row, column=6).fill = highlight_fill
+    row += 1
+    
+    # Gemeinkosten
+    ws.cell(row=row, column=1, value="Gemeinkosten")
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.overhead_cost + result.marketing_cost).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+    ws.cell(row=row, column=6, value=summary['total_overhead'] + summary['total_marketing']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).border = border
+    row += 1
+    
+    # Abschreibungen
+    ws.cell(row=row, column=1, value="Abschreibungen").font = Font(bold=True, color="d97706")
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.depreciation).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).font = Font(color="d97706")
+    ws.cell(row=row, column=6, value=summary['total_depreciation']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, color="d97706")
+    ws.cell(row=row, column=6).border = border
+    row += 1
+    
+    # Betriebsergebnis (EBIT)
+    ws.cell(row=row, column=1, value="= Betriebsergebnis (EBIT)").font = Font(bold=True, italic=True)
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.ebit).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).fill = highlight_fill
+        ws.cell(row=row, column=i).font = Font(bold=True)
+    ws.cell(row=row, column=6, value=summary['total_ebit']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, size=12)
+    ws.cell(row=row, column=6).border = border
+    ws.cell(row=row, column=6).fill = highlight_fill
+    row += 1
+    
+    # Zinsen
+    ws.cell(row=row, column=1, value="Zinsen").font = Font(bold=True, color="dc2626")
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.interest).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).font = Font(color="dc2626")
+    ws.cell(row=row, column=6, value=summary['total_interest']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, color="dc2626")
+    ws.cell(row=row, column=6).border = border
+    row += 1
+    
+    # Gewinn vor Steuern
+    ws.cell(row=row, column=1, value="= Gewinn vor Steuern").font = Font(bold=True, italic=True)
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.profit_before_tax).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).fill = highlight_fill
+        ws.cell(row=row, column=i).font = Font(bold=True)
+    ws.cell(row=row, column=6, value=summary['total_profit_before_tax']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, size=12)
+    ws.cell(row=row, column=6).border = border
+    ws.cell(row=row, column=6).fill = highlight_fill
+    row += 1
+    
+    # Steuern
+    ws.cell(row=row, column=1, value="Steuern (33,33%)").font = Font(bold=True, color="dc2626")
+    for i, result in enumerate(simulator.results, start=2):
+        ws.cell(row=row, column=i, value=result.tax).number_format = '0.00" M"'
+        ws.cell(row=row, column=i).border = border
+        ws.cell(row=row, column=i).font = Font(color="dc2626")
+    ws.cell(row=row, column=6, value=summary['total_tax']).number_format = '0.00" M"'
+    ws.cell(row=row, column=6).font = Font(bold=True, color="dc2626")
+    ws.cell(row=row, column=6).border = border
+    row += 1
+    
+    # Gewinn nach Steuern
+    ws.cell(row=row, column=1, value="= GEWINN NACH STEUERN").font = Font(bold=True, size=12, color="22543d")
+    for i, result in enumerate(simulator.results, start=2):
+        cell = ws.cell(row=row, column=i, value=result.net_profit)
+        cell.number_format = '0.00" M"'
+        cell.border = border
+        if result.net_profit >= 0:
+            cell.fill = positive_fill
+            cell.font = Font(bold=True, color="22543d")
+        else:
+            cell.fill = negative_fill
+            cell.font = Font(bold=True, color="742a2a")
+    cell = ws.cell(row=row, column=6, value=summary['total_net_profit'])
+    cell.number_format = '0.00" M"'
+    cell.border = border
+    if summary['total_net_profit'] >= 0:
+        cell.fill = positive_fill
+        cell.font = Font(bold=True, size=13, color="22543d")
+    else:
+        cell.fill = negative_fill
+        cell.font = Font(bold=True, size=13, color="742a2a")
+
+    # Summary section
+    row += 3
+    ws.merge_cells(f'A{row}:J{row}')
+    ws[f'A{row}'] = "📈 JAHRESABSCHLUSS - WICHTIGE KENNZAHLEN"
     ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
 
     row += 2
     summary_data = [
-        ['Gesamtumsatz', f"{summary['total_revenue']:.2f} M", 'positive'],
-        ['Gesamtkosten', f"{summary['total_cost']:.2f} M", 'negative'],
-        ['Gesamtgewinn', f"{summary['total_profit']:.2f} M", 'profit'],
-        ['Durchschnittlicher Gewinn pro Quartal', f"{summary['average_profit_per_quarter']:.2f} M", ''],
-        ['Endbestand Kasse', f"{summary['final_cash']:.2f} M", 'positive'],
+        ['Gesamte Abschreibungen (Jahr)', f"{summary['total_depreciation']:.2f} M", 'info'],
+        ['Gesamte Zinsen (Jahr)', f"{summary['total_interest']:.2f} M", 'info'],
+        ['Gesamte Steuern (Jahr)', f"{summary['total_tax']:.2f} M", 'info'],
+        ['', '', ''],
+        ['Durchschn. Gewinn pro Quartal', f"{summary['average_profit_per_quarter']:.2f} M", ''],
         ['Umsatzrendite', f"{summary['return_on_sales']:.2f}%", ''],
+        ['Endbestand Kasse', f"{summary['final_cash']:.2f} M", 'positive'],
     ]
 
     for label, value, style in summary_data:
-        ws[f'B{row}'] = label
-        ws[f'B{row}'].font = Font(bold=True)
-        ws[f'D{row}'] = value
-        ws[f'D{row}'].font = Font(bold=True, size=12)
+        if label:
+            ws[f'B{row}'] = label
+            ws[f'B{row}'].font = Font(bold=True)
+            ws[f'D{row}'] = value
+            ws[f'D{row}'].font = Font(bold=True, size=12)
 
-        if style == 'positive':
-            ws[f'D{row}'].fill = positive_fill
-            ws[f'D{row}'].font = Font(bold=True, size=12, color="22543d")
-        elif style == 'negative':
-            ws[f'D{row}'].fill = negative_fill
-            ws[f'D{row}'].font = Font(bold=True, size=12, color="742a2a")
-        elif style == 'profit':
-            if summary['total_profit'] >= 0:
+            if style == 'positive':
                 ws[f'D{row}'].fill = positive_fill
                 ws[f'D{row}'].font = Font(bold=True, size=12, color="22543d")
-            else:
-                ws[f'D{row}'].fill = negative_fill
-                ws[f'D{row}'].font = Font(bold=True, size=12, color="742a2a")
-
-        row += 1
-
-    # Player Decisions section
-    row += 2
-    ws.merge_cells(f'A{row}:H{row}')
-    ws[f'A{row}'] = "🎯 Spieler Entscheidungen"
-    ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
-
-    row += 2
-    decision_headers = ['Quartal', 'Rohmaterial Einkauf', 'Produktion', 'Verkaufspreis', 'Marketing']
-    for col, header in enumerate(decision_headers, start=1):
-        cell = ws.cell(row=row, column=col, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        cell.border = border
-
-    row += 1
-    for result in simulator.results:
-        ws.cell(row=row, column=1, value=f"Q{result.quarter}")
-        ws.cell(row=row, column=2, value=f"{result.material_purchase_lots} Lose")
-        ws.cell(row=row, column=3, value=f"{result.production_lots} Lose")
-        ws.cell(row=row, column=4, value=f"{result.sales_price:.2f} M")
-        ws.cell(row=row, column=5, value=f"{result.marketing_cost:.2f} M")
-
-        # Apply borders
-        for col in range(1, 6):
-            ws.cell(row=row, column=col).border = border
-            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
-
-        row += 1
-
-    # Quarterly results section
-    row += 2
-    ws.merge_cells(f'A{row}:H{row}')
-    ws[f'A{row}'] = "📈 Quartalsergebnisse"
-    ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
-
-    row += 2
-    headers = ['Quartal', 'Verkaufspreis', 'Absatz', 'Umsatz', 'Kosten', 'Nettogewinn', 'Kasse', 'Lager']
-    for col, header in enumerate(headers, start=1):
-        cell = ws.cell(row=row, column=col, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        cell.border = border
-
-    row += 1
-    for result in simulator.results:
-        ws.cell(row=row, column=1, value=f"Q{result.quarter}")
-        ws.cell(row=row, column=2, value=f"{result.sales_price:.2f} M")
-        ws.cell(row=row, column=3, value=f"{result.sales_volume} Lose")
-        ws.cell(row=row, column=4, value=f"{result.sales_revenue:.2f} M")
-        ws.cell(row=row, column=5, value=f"{result.total_cost:.2f} M")
-        ws.cell(row=row, column=6, value=f"{result.net_profit:.2f} M")
-        ws.cell(row=row, column=7, value=f"{result.cash_ending:.2f} M")
-        ws.cell(row=row, column=8, value=f"{result.finished_goods_inventory} Lose")
-
-        # Color code profit
-        if result.net_profit >= 0:
-            ws.cell(row=row, column=6).fill = positive_fill
-            ws.cell(row=row, column=6).font = Font(color="22543d")
-        else:
-            ws.cell(row=row, column=6).fill = negative_fill
-            ws.cell(row=row, column=6).font = Font(color="742a2a")
-
-        # Apply borders
-        for col in range(1, 9):
-            ws.cell(row=row, column=col).border = border
-            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
-
-        row += 1
-
-    # Detailed cost breakdown
-    row += 2
-    ws.merge_cells(f'A{row}:H{row}')
-    ws[f'A{row}'] = "💰 Detaillierte Kostenaufstellung"
-    ws[f'A{row}'].font = Font(bold=True, size=14, color="667eea")
-
-    row += 2
-    cost_headers = ['Quartal', 'Material', 'Fertigung', 'Montage', 'Gemeinkosten', 'Marketing', 'Gesamt']
-    for col, header in enumerate(cost_headers, start=1):
-        cell = ws.cell(row=row, column=col, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-        cell.border = border
-
-    row += 1
-    for result in simulator.results:
-        ws.cell(row=row, column=1, value=f"Q{result.quarter}")
-        ws.cell(row=row, column=2, value=f"{result.material_cost:.2f} M")
-        ws.cell(row=row, column=3, value=f"{result.production_cost:.2f} M")
-        ws.cell(row=row, column=4, value=f"{result.assembly_cost:.2f} M")
-        ws.cell(row=row, column=5, value=f"{result.overhead_cost:.2f} M")
-        ws.cell(row=row, column=6, value=f"{result.marketing_cost:.2f} M")
-        ws.cell(row=row, column=7, value=f"{result.total_cost:.2f} M")
-
-        for col in range(1, 8):
-            ws.cell(row=row, column=col).border = border
-            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+            elif style == 'info':
+                ws[f'D{row}'].font = Font(bold=True, size=12, color="d97706")
 
         row += 1
 
     # Adjust column widths
-    ws.column_dimensions['A'].width = 12
-    ws.column_dimensions['B'].width = 18
-    ws.column_dimensions['C'].width = 15
-    ws.column_dimensions['D'].width = 15
-    ws.column_dimensions['E'].width = 15
-    ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 15
-    ws.column_dimensions['H'].width = 15
+    ws.column_dimensions['A'].width = 30
+    for col in ['B', 'C', 'D', 'E', 'F']:
+        ws.column_dimensions[col].width = 15
 
     # Add row height for title
     ws.row_dimensions[1].height = 25
@@ -380,7 +428,7 @@ def export_excel():
     os.makedirs(exports_dir, exist_ok=True)
 
     # Save file
-    filename = f"Factory_Ergebnisse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = f"Factory_GuV_Jahresabschluss_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     filepath = os.path.join(exports_dir, filename)
     wb.save(filepath)
 
