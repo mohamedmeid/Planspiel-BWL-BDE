@@ -670,8 +670,14 @@
            CHARTS (ENHANCED)
            ============================================ */
         
-        .chart-container {
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
             margin: 30px 0;
+        }
+
+        .chart-container {
             padding: 25px;
             background: white;
             border-radius: 15px;
@@ -679,21 +685,37 @@
             height: 450px;
             position: relative;
             border: 1px solid var(--border);
+            transition: all 0.3s;
         }
-        
+
+        .chart-container:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+            height: 500px;
+        }
+
         .chart-title {
             text-align: center;
             color: var(--dark);
-            font-size: 1.4em;
+            font-size: 1.3em;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
-        
+
         .chart-subtitle {
             text-align: center;
             color: var(--gray);
-            font-size: 0.9em;
-            margin-bottom: 20px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
+
+        .chart-canvas-wrapper {
+            height: calc(100% - 80px);
+            position: relative;
         }
         
         /* ============================================
@@ -754,54 +776,71 @@
                 padding: 20px;
                 border-radius: 15px;
             }
-            
+
             h1 {
                 font-size: 1.8em;
             }
-            
+
             .progress-stepper {
                 padding: 15px;
             }
-            
+
             .step-circle {
                 width: 40px;
                 height: 40px;
                 font-size: 1em;
             }
-            
+
             .step-label {
                 font-size: 0.75em;
             }
-            
+
             .status-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
             }
-            
+
             .status-value {
                 font-size: 1.5em;
             }
-            
+
             .input-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .button-group {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .quarter-number {
                 font-size: 2em;
             }
-            
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
             .chart-container {
-                height: 300px;
+                height: 350px;
                 padding: 15px;
+            }
+
+            .chart-container.full-width {
+                height: 400px;
+            }
+
+            .chart-title {
+                font-size: 1.1em;
+            }
+
+            .chart-subtitle {
+                font-size: 0.8em;
             }
         }
         
@@ -1099,19 +1138,29 @@
         async function startGame() {
             showLoading();
             try {
+                // First, ensure we're starting fresh
+                currentQuarter = 0;
+                allResults = [];
+
+                // Clear all sections
+                document.getElementById('results-section').innerHTML = '';
+                document.getElementById('summary-section').innerHTML = '';
+                document.getElementById('charts-section').innerHTML = '';
+
                 const response = await fetch('/api/start_game', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({game_id: gameId})
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     document.getElementById('start-btn').style.display = 'none';
                     document.getElementById('simulate-btn').style.display = 'inline-flex';
                     document.getElementById('quarter-indicator').style.display = 'block';
-                    
+                    document.getElementById('quarter-display').textContent = 'QUARTAL 1';
+
                     updateProgress(1);
                     updateStatus(data.initial_state);
                     showAlert('Spiel gestartet! Treffen Sie Ihre Entscheidungen für Quartal 1.', 'success');
@@ -1344,43 +1393,332 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
-                            <div class="card-icon">📈</div>
-                            Verlaufsdiagramme
+                            <div class="card-icon">📊</div>
+                            Grafische Auswertungen
                         </div>
                     </div>
 
-                    <div class="chart-container">
-                        <canvas id="profitChart"></canvas>
+                    <div class="alert alert-info" style="margin: 20px 0;">
+                        <span class="alert-icon">ℹ️</span>
+                        <span>Interaktive Diagramme: Bewegen Sie die Maus über die Elemente für Details. Klicken Sie auf Legendeneinträge zum Ein-/Ausblenden.</span>
                     </div>
 
-                    <div class="chart-container">
-                        <canvas id="cashChart"></canvas>
+                    <div class="charts-grid">
+                        <!-- STAR CHART: GuV Waterfall (Full Width) -->
+                        <div class="chart-container full-width">
+                            <h3 class="chart-title">🌊 GuV-Wasserfalldiagramm</h3>
+                            <p class="chart-subtitle">Vom Umsatz zum Nettogewinn - Durchschnitt pro Quartal</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="waterfallChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Quarterly Performance Multi-Line -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">📈 Quartalsweise Entwicklung</h3>
+                            <p class="chart-subtitle">Umsatz, Kosten, Gewinn und Kassenbestand</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="quarterlyPerformanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- GuV Components Comparison -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">📊 GuV-Komponenten Vergleich</h3>
+                            <p class="chart-subtitle">Entwicklung der GuV-Stufen</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="guvComparisonChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Cost Breakdown Pie -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">🥧 Kostenverteilung</h3>
+                            <p class="chart-subtitle">Gesamtkosten (Jahr)</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="costPieChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Stacked Bar Chart -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">📊 Quartalsergebnisse Gestapelt</h3>
+                            <p class="chart-subtitle">Detaillierte Kostenstruktur</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="stackedBarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Profit Trend -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">💰 Gewinnentwicklung</h3>
+                            <p class="chart-subtitle">Gewinnstufen über die Quartale</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="profitChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Cash Balance -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">💵 Kassenbestand-Entwicklung</h3>
+                            <p class="chart-subtitle">Liquiditätsentwicklung</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="cashChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
 
-            // Create profit chart
-            const profitCtx = document.getElementById('profitChart').getContext('2d');
-            charts.profitChart = new Chart(profitCtx, {
+            // Calculate averages for waterfall
+            const avgRevenue = allResults.reduce((sum, r) => sum + r.sales_revenue, 0) / allResults.length;
+            const avgHerstellung = allResults.reduce((sum, r) => sum + r.herstellungskosten, 0) / allResults.length;
+            const avgGross = allResults.reduce((sum, r) => sum + r.gross_profit, 0) / allResults.length;
+            const avgOverhead = allResults.reduce((sum, r) => sum + r.overhead_cost, 0) / allResults.length;
+            const avgMarketing = allResults.reduce((sum, r) => sum + r.marketing_cost, 0) / allResults.length;
+            const avgDepreciation = allResults.reduce((sum, r) => sum + r.depreciation, 0) / allResults.length;
+            const avgEBIT = allResults.reduce((sum, r) => sum + r.ebit, 0) / allResults.length;
+            const avgInterest = allResults.reduce((sum, r) => sum + r.interest, 0) / allResults.length;
+            const avgPBT = allResults.reduce((sum, r) => sum + r.profit_before_tax, 0) / allResults.length;
+            const avgTax = allResults.reduce((sum, r) => sum + r.tax, 0) / allResults.length;
+            const avgNet = allResults.reduce((sum, r) => sum + r.net_profit, 0) / allResults.length;
+
+            // 1. STAR CHART: GuV Waterfall Chart
+            const waterfallCtx = document.getElementById('waterfallChart').getContext('2d');
+            charts.waterfallChart = new Chart(waterfallCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Umsatz',
+                        'Herstellung',
+                        'Brutto',
+                        'Gemein.',
+                        'Marketing',
+                        'Abschr.',
+                        'EBIT',
+                        'Zinsen',
+                        'vor Steuer',
+                        'Steuern',
+                        'Netto'
+                    ],
+                    datasets: [{
+                        label: 'GuV-Wasserfall',
+                        data: [
+                            avgRevenue,
+                            avgHerstellung,
+                            avgGross,
+                            avgOverhead,
+                            avgMarketing,
+                            avgDepreciation,
+                            avgEBIT,
+                            avgInterest,
+                            avgPBT,
+                            avgTax,
+                            avgNet
+                        ],
+                        backgroundColor: [
+                            '#48bb78',  // Revenue - green
+                            '#f56565',  // Herstellung - red
+                            '#4299e1',  // Brutto - blue
+                            '#f56565',  // Overhead - red
+                            '#9966ff',  // Marketing - purple
+                            '#ed8936',  // Depreciation - orange (nicht cash-wirksam)
+                            '#4299e1',  // EBIT - blue
+                            '#c53030',  // Interest - dark red (cash-wirksam)
+                            '#4299e1',  // PBT - blue
+                            '#ffce56',  // Tax - yellow (cash-wirksam)
+                            '#38a169'   // Net - dark green
+                        ],
+                        borderColor: [
+                            '#2f855a',
+                            '#c53030',
+                            '#2c5282',
+                            '#c53030',
+                            '#7c3aed',
+                            '#c05621',
+                            '#2c5282',
+                            '#9b2c2c',
+                            '#2c5282',
+                            '#d69e2e',
+                            '#276749'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label;
+                                    const value = context.parsed.y;
+                                    let extra = '';
+
+                                    if (label === 'Abschr.') {
+                                        extra = ' (nicht cash-wirksam!)';
+                                    } else if (label === 'Zinsen' || label === 'Steuern') {
+                                        extra = ' (cash-wirksam!)';
+                                    }
+
+                                    return value.toFixed(2) + ' M' + extra;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Betrag in Millionen',
+                                font: { size: 12, weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' M';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'GuV-Positionen',
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Quarterly Performance Multi-Line Chart
+            const qPerfCtx = document.getElementById('quarterlyPerformanceChart').getContext('2d');
+            charts.quarterlyPerformanceChart = new Chart(qPerfCtx, {
                 type: 'line',
                 data: {
                     labels: allResults.map(r => `Q${r.quarter}`),
                     datasets: [
                         {
-                            label: 'Gewinn nach Steuern',
-                            data: allResults.map(r => r.net_profit),
+                            label: '💰 Umsatzerlöse',
+                            data: allResults.map(r => r.sales_revenue),
                             borderColor: '#48bb78',
                             backgroundColor: 'rgba(72, 187, 120, 0.1)',
                             borderWidth: 3,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: '📉 Gesamtkosten',
+                            data: allResults.map(r => r.total_operating_cost),
+                            borderColor: '#f56565',
+                            backgroundColor: 'rgba(245, 101, 101, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: '📈 Gewinn (netto)',
+                            data: allResults.map(r => r.net_profit),
+                            borderColor: '#4299e1',
+                            backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: '💵 Kassenbestand',
+                            data: allResults.map(r => r.cash_ending),
+                            borderColor: '#ed8936',
+                            backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 11, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Betrag in Millionen',
+                                font: { size: 12, weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. GuV Components Comparison (Grouped Bar)
+            const guvCompCtx = document.getElementById('guvComparisonChart').getContext('2d');
+            charts.guvComparisonChart = new Chart(guvCompCtx, {
+                type: 'bar',
+                data: {
+                    labels: allResults.map(r => `Q${r.quarter}`),
+                    datasets: [
+                        {
+                            label: 'Bruttoergebnis',
+                            data: allResults.map(r => r.gross_profit),
+                            backgroundColor: '#48bb78',
+                            borderColor: '#2f855a',
+                            borderWidth: 2
                         },
                         {
                             label: 'EBIT',
                             data: allResults.map(r => r.ebit),
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4
+                            backgroundColor: '#4299e1',
+                            borderColor: '#2c5282',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'vor Steuern',
+                            data: allResults.map(r => r.profit_before_tax),
+                            backgroundColor: '#ed8936',
+                            borderColor: '#c05621',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'nach Steuern',
+                            data: allResults.map(r => r.net_profit),
+                            backgroundColor: '#667eea',
+                            borderColor: '#5a67d8',
+                            borderWidth: 2
                         }
                     ]
                 },
@@ -1388,11 +1726,6 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Gewinnentwicklung',
-                            font: { size: 16, weight: 'bold' }
-                        },
                         legend: {
                             display: true,
                             position: 'top'
@@ -1411,17 +1744,52 @@
                 }
             });
 
-            // Create cash chart
-            const cashCtx = document.getElementById('cashChart').getContext('2d');
-            charts.cashChart = new Chart(cashCtx, {
-                type: 'bar',
+            // 4. Cost Breakdown Pie Chart
+            const totalMaterial = allResults.reduce((sum, r) => sum + r.material_cost, 0);
+            const totalProduction = allResults.reduce((sum, r) => sum + r.production_cost + r.assembly_cost, 0);
+            const totalOverhead = allResults.reduce((sum, r) => sum + r.overhead_cost, 0);
+            const totalMarketing = allResults.reduce((sum, r) => sum + r.marketing_cost, 0);
+            const totalDepreciation = allResults.reduce((sum, r) => sum + r.depreciation, 0);
+            const totalInterest = allResults.reduce((sum, r) => sum + r.interest, 0);
+            const totalTax = allResults.reduce((sum, r) => sum + r.tax, 0);
+
+            const costPieCtx = document.getElementById('costPieChart').getContext('2d');
+            charts.costPieChart = new Chart(costPieCtx, {
+                type: 'pie',
                 data: {
-                    labels: allResults.map(r => `Q${r.quarter}`),
+                    labels: [
+                        'Herstellungskosten',
+                        'Gemeinkosten',
+                        'Marketing',
+                        'Abschreibungen (nicht cash-wirksam)',
+                        'Zinsen (cash-wirksam)',
+                        'Steuern (cash-wirksam)'
+                    ],
                     datasets: [{
-                        label: 'Kassenbestand',
-                        data: allResults.map(r => r.cash_ending),
-                        backgroundColor: '#4299e1',
-                        borderColor: '#2b6cb0',
+                        data: [
+                            totalMaterial + totalProduction,
+                            totalOverhead,
+                            totalMarketing,
+                            totalDepreciation,
+                            totalInterest,
+                            totalTax
+                        ],
+                        backgroundColor: [
+                            '#f56565',  // Herstellung - red
+                            '#4299e1',  // Gemeinkosten - blue
+                            '#9966ff',  // Marketing - purple
+                            '#ed8936',  // Depreciation - orange
+                            '#c53030',  // Interest - dark red
+                            '#ffce56'   // Tax - yellow
+                        ],
+                        borderColor: [
+                            '#c53030',
+                            '#2c5282',
+                            '#7c3aed',
+                            '#c05621',
+                            '#9b2c2c',
+                            '#d69e2e'
+                        ],
                         borderWidth: 2
                     }]
                 },
@@ -1429,13 +1797,223 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Kassenbestand pro Quartal',
-                            font: { size: 16, weight: 'bold' }
-                        },
                         legend: {
-                            display: false
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                font: { size: 11 },
+                                padding: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.parsed;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return context.label + ': ' + value.toFixed(2) + ' M (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 5. Stacked Bar Chart
+            const stackedCtx = document.getElementById('stackedBarChart').getContext('2d');
+            charts.stackedBarChart = new Chart(stackedCtx, {
+                type: 'bar',
+                data: {
+                    labels: allResults.map(r => `Q${r.quarter}`),
+                    datasets: [
+                        {
+                            label: 'Material',
+                            data: allResults.map(r => r.material_cost),
+                            backgroundColor: '#f56565',
+                            borderColor: '#c53030',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Fertigung',
+                            data: allResults.map(r => r.production_cost),
+                            backgroundColor: '#fc8181',
+                            borderColor: '#e53e3e',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Montage',
+                            data: allResults.map(r => r.assembly_cost),
+                            backgroundColor: '#feb2b2',
+                            borderColor: '#fc8181',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Gemeinkosten',
+                            data: allResults.map(r => r.overhead_cost),
+                            backgroundColor: '#4299e1',
+                            borderColor: '#2c5282',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Marketing',
+                            data: allResults.map(r => r.marketing_cost),
+                            backgroundColor: '#9966ff',
+                            borderColor: '#7c3aed',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Abschreibungen',
+                            data: allResults.map(r => r.depreciation),
+                            backgroundColor: '#ed8936',
+                            borderColor: '#c05621',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Zinsen',
+                            data: allResults.map(r => r.interest),
+                            backgroundColor: '#c53030',
+                            borderColor: '#9b2c2c',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Steuern',
+                            data: allResults.map(r => r.tax),
+                            backgroundColor: '#ffce56',
+                            borderColor: '#d69e2e',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 10 },
+                                padding: 10
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    let sum = 0;
+                                    tooltipItems.forEach(function(tooltipItem) {
+                                        sum += tooltipItem.parsed.y;
+                                    });
+                                    return 'Gesamt: ' + sum.toFixed(2) + ' M';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Kosten in Millionen',
+                                font: { size: 12, weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 6. Profit Trend Chart
+            const profitCtx = document.getElementById('profitChart').getContext('2d');
+            charts.profitChart = new Chart(profitCtx, {
+                type: 'line',
+                data: {
+                    labels: allResults.map(r => `Q${r.quarter}`),
+                    datasets: [
+                        {
+                            label: 'Gewinn nach Steuern',
+                            data: allResults.map(r => r.net_profit),
+                            borderColor: '#38a169',
+                            backgroundColor: 'rgba(56, 161, 105, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#38a169',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'EBIT',
+                            data: allResults.map(r => r.ebit),
+                            borderColor: '#4299e1',
+                            backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 7. Cash Balance Chart (Area)
+            const cashCtx = document.getElementById('cashChart').getContext('2d');
+            charts.cashChart = new Chart(cashCtx, {
+                type: 'line',
+                data: {
+                    labels: allResults.map(r => `Q${r.quarter}`),
+                    datasets: [{
+                        label: 'Kassenbestand',
+                        data: allResults.map(r => r.cash_ending),
+                        backgroundColor: 'rgba(72, 187, 120, 0.3)',
+                        borderColor: '#48bb78',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#48bb78',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
                         }
                     },
                     scales: {
@@ -1479,26 +2057,42 @@
         function resetGame() {
             if (confirm('Möchten Sie wirklich ein neues Spiel starten? Alle aktuellen Daten gehen verloren.')) {
                 showLoading();
+
+                // Generate new game ID
                 gameId = 'game_' + Date.now();
                 currentQuarter = 0;
                 allResults = [];
-                
-                // Reset UI
+
+                // Destroy all existing charts
+                Object.keys(charts).forEach(chartKey => {
+                    if (charts[chartKey]) {
+                        charts[chartKey].destroy();
+                    }
+                });
+                charts = {};
+
+                // Clear all sections completely
+                document.getElementById('results-section').innerHTML = '';
+                document.getElementById('summary-section').innerHTML = '';
+                document.getElementById('charts-section').innerHTML = '';
+
+                // Reset UI elements
                 updateProgress(0);
                 document.getElementById('quarter-indicator').style.display = 'none';
+                document.getElementById('quarter-display').textContent = 'QUARTAL 1';
                 document.getElementById('start-btn').style.display = 'inline-flex';
                 document.getElementById('simulate-btn').style.display = 'none';
                 document.getElementById('export-btn').style.display = 'none';
-                
-                // Reset inputs
+
+                // Reset inputs to default values
                 document.getElementById('sales-price').value = '13.0';
                 document.getElementById('marketing-budget').value = '0';
                 document.getElementById('material-purchase').value = '2';
                 document.getElementById('production-lots').value = '2';
                 document.getElementById('material-factor').value = '1.0';
                 document.getElementById('overhead-factor').value = '1.0';
-                
-                // Reset status
+
+                // Reset status to initial state
                 updateStatus({
                     cash: 28.0,
                     accounts_receivable: 26.0,
@@ -1506,9 +2100,12 @@
                     work_in_progress: 2,
                     finished_goods_inventory: 2
                 });
-                
+
+                // Scroll to top smoothly
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
                 hideLoading();
-                showAlert('Neues Spiel bereit! Klicken Sie auf "Spiel Starten".', 'info');
+                showAlert('🔄 Neues Spiel bereit! Klicken Sie auf "Spiel Starten".', 'success');
             }
         }
         
