@@ -207,6 +207,19 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
         }
+
+        /* PHASE 1 FIX: Better touch states for cards */
+        .card:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (hover: none) {
+            .card:hover {
+                transform: none;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            }
+        }
         
         .card-header {
             display: flex;
@@ -263,6 +276,21 @@
             transform: translateY(-4px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             border-color: var(--primary);
+        }
+
+        /* PHASE 1 FIX: Better touch feedback for mobile */
+        .status-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Disable hover effects on touch devices */
+        @media (hover: none) {
+            .status-card:hover {
+                transform: none;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border-color: var(--border);
+            }
         }
         
         .status-label {
@@ -521,11 +549,114 @@
         .btn:disabled:hover {
             transform: none;
         }
+
+        /* PHASE 1 FIX: Better touch feedback for buttons */
+        .btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        @media (hover: none) {
+            .btn:hover:not(:disabled) {
+                transform: none;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .btn:active:not(:disabled) {
+                transform: scale(0.95);
+            }
+        }
         
         .btn-icon {
             font-size: 1.2em;
         }
-        
+
+        /* ============================================
+           PHASE 2: SCROLL TO TOP BUTTON
+           ============================================ */
+
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .scroll-to-top:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .scroll-to-top:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .scroll-to-top {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+            }
+        }
+
+        /* ============================================
+           PHASE 2: STICKY ACTION BAR
+           ============================================ */
+
+        .action-bar-sticky {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0);
+            transition: box-shadow 0.3s;
+            margin: 0 -40px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+
+        .action-bar-sticky.scrolled {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-bar-sticky .button-group {
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .action-bar-sticky {
+                margin: 0 -20px;
+                padding-left: 20px;
+                padding-right: 20px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+        }
+
         /* ============================================
            LOADING STATES (NEW!)
            ============================================ */
@@ -607,7 +738,118 @@
         .alert-icon {
             font-size: 1.5em;
         }
-        
+
+        /* ============================================
+           PHASE 2: EMPTY & ERROR STATES
+           ============================================ */
+
+        .empty-state,
+        .error-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--gray);
+        }
+
+        .empty-icon,
+        .error-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.6;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .empty-state h3,
+        .error-state h3 {
+            color: var(--dark);
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .empty-state p,
+        .error-state p {
+            color: var(--gray);
+            font-size: 1em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .error-state {
+            padding: 60px 20px;
+        }
+
+        .error-icon {
+            color: var(--warning);
+        }
+
+        .error-state .btn {
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .empty-state,
+            .error-state {
+                padding: 60px 20px;
+            }
+
+            .empty-icon,
+            .error-icon {
+                font-size: 4em;
+            }
+
+            .empty-state h3,
+            .error-state h3 {
+                font-size: 1.3em;
+            }
+        }
+
+        /* ============================================
+           PHASE 2: KEYBOARD SHORTCUTS HINT
+           ============================================ */
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--dark);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 999;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .keyboard-hint.visible {
+            opacity: 0.9;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .keyboard-hint kbd {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .keyboard-hint {
+                display: none; /* Hide on mobile */
+            }
+        }
+
         /* ============================================
            TABLES (ENHANCED)
            ============================================ */
@@ -776,6 +1018,14 @@
             transform: translateY(-4px);
         }
 
+        /* PHASE 1 FIX: Better touch states for charts */
+        @media (hover: none) {
+            .chart-container:hover {
+                transform: none;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            }
+        }
+
         .chart-container.full-width {
             grid-column: 1 / -1;
             height: 500px;
@@ -853,7 +1103,7 @@
         /* ============================================
            RESPONSIVE (ENHANCED)
            ============================================ */
-        
+
         @media screen and (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -891,13 +1141,24 @@
                 grid-template-columns: 1fr;
             }
 
+            /* PHASE 1 FIX: Better button layout - grid instead of column */
             .button-group {
-                flex-direction: column;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
             }
 
             .btn {
                 width: 100%;
                 justify-content: center;
+                padding: 12px 16px;
+                font-size: 0.95em;
+            }
+
+            /* Primary actions take full width when alone */
+            .btn:only-child,
+            #start-btn {
+                grid-column: 1 / -1;
             }
 
             .quarter-number {
@@ -909,13 +1170,14 @@
                 gap: 20px;
             }
 
+            /* PHASE 1 FIX: Better chart heights for mobile */
             .chart-container {
-                height: 350px;
+                height: 320px;
                 padding: 15px;
             }
 
             .chart-container.full-width {
-                height: 400px;
+                height: 380px;
             }
 
             .chart-title {
@@ -924,6 +1186,223 @@
 
             .chart-subtitle {
                 font-size: 0.8em;
+            }
+
+            /* PHASE 1 FIX: Better input fields for mobile */
+            input[type="number"] {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+                padding: 16px 14px !important;
+                min-height: 48px; /* Better touch target */
+            }
+
+            .input-label {
+                font-size: 0.9em;
+            }
+
+            .input-hint {
+                font-size: 0.75em;
+            }
+
+            /* PHASE 1 FIX: Better calculation details on mobile */
+            .calculation-details {
+                padding: 12px 15px;
+                font-size: 0.85em;
+            }
+
+            .formula {
+                padding: 8px 12px;
+                font-size: 0.8em;
+                overflow-x: auto;
+            }
+
+            .formula-line {
+                white-space: nowrap;
+            }
+
+            .calculation-toggle::before {
+                width: 24px;
+                height: 24px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* PHASE 1 FIX: Better table responsiveness */
+            .results-table {
+                font-size: 0.9em;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 12px 10px;
+            }
+        }
+
+        /* PHASE 1 FIX: Extra small screens (iPhone SE, small Android) */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+            }
+
+            .badge {
+                font-size: 0.8em;
+                padding: 6px 14px;
+            }
+
+            /* Better chart sizing for small phones */
+            .chart-container {
+                height: 280px;
+                padding: 10px;
+            }
+
+            .chart-container.full-width {
+                height: 320px;
+            }
+
+            .chart-title {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            .chart-subtitle {
+                font-size: 0.75em;
+                display: none; /* Save space on tiny screens */
+            }
+
+            /* Better status cards for small screens */
+            .status-grid {
+                gap: 10px;
+            }
+
+            .status-card {
+                padding: 15px;
+            }
+
+            .status-value {
+                font-size: 1.3em;
+            }
+
+            .status-label {
+                font-size: 0.75em;
+            }
+
+            /* Better input sizing */
+            input[type="number"] {
+                padding: 14px 12px !important;
+            }
+
+            .btn {
+                padding: 11px 14px;
+                font-size: 0.9em;
+            }
+
+            .btn-icon {
+                font-size: 1em;
+            }
+
+            /* Formula tables better wrapping */
+            .formula {
+                font-size: 0.75em;
+            }
+
+            .results-table {
+                font-size: 0.85em;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 10px 8px;
+            }
+        }
+
+        /* PHASE 1 FIX: Tiny screens (very old phones, 320px width) */
+        @media screen and (max-width: 375px) {
+            h1 {
+                font-size: 1.4em;
+            }
+
+            /* Fix progress stepper overflow */
+            .progress-stepper {
+                padding: 10px;
+            }
+
+            .step-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em;
+            }
+
+            .step-label {
+                font-size: 0.65em;
+                max-width: 45px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .step:not(:last-child)::after {
+                top: 18px;
+            }
+
+            /* Even smaller charts for 320px screens */
+            .chart-container {
+                height: 250px;
+                padding: 8px;
+            }
+
+            .chart-container.full-width {
+                height: 280px;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .btn {
+                grid-column: 1 !important;
+            }
+        }
+
+        /* PHASE 1 FIX: Landscape orientation optimization */
+        @media screen and (max-width: 768px) and (orientation: landscape) {
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .chart-container {
+                height: 280px;
+            }
+
+            .chart-container.full-width {
+                grid-column: 1 / -1;
+                height: 320px;
+            }
+
+            .status-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .input-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
@@ -959,11 +1438,27 @@
     </style>
 </head>
 <body>
-    <!-- Loading overlay -->
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
+    <!-- Loading overlay - PHASE 1 IMPROVED: Better accessibility -->
+    <div class="loading" id="loading" role="alert" aria-live="assertive" aria-label="Laden">
+        <div class="spinner" aria-hidden="true"></div>
+        <span style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;">
+            Daten werden geladen, bitte warten...
+        </span>
     </div>
-    
+
+    <!-- PHASE 2: Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top" onclick="scrollToTop()" aria-label="Nach oben scrollen" title="Nach oben">
+        ↑
+    </button>
+
+    <!-- PHASE 2: Keyboard Shortcuts Hint -->
+    <div id="keyboardHint" class="keyboard-hint">
+        <strong>⌨️ Tastenkürzel:</strong><br>
+        <kbd>Alt</kbd>+<kbd>S</kbd> Start/Simulieren<br>
+        <kbd>Alt</kbd>+<kbd>E</kbd> Exportieren<br>
+        <kbd>Alt</kbd>+<kbd>R</kbd> Zurücksetzen
+    </div>
+
     <div class="container">
         <!-- Header -->
         <header>
@@ -1107,7 +1602,9 @@
                         </span>
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="sales-price" value="13.0" step="0.5" min="1" max="20" required>
+                        <input type="number" id="sales-price" value="13.0" step="0.5" min="1" max="20"
+                               inputmode="decimal" pattern="[0-9.]*" required
+                               aria-label="Verkaufspreis in Millionen Euro">
                         <span class="input-feedback"></span>
                     </div>
                     <small class="input-hint">Standard: 13.0 M pro Einheit</small>
@@ -1119,7 +1616,9 @@
                         Marketing-Budget
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="marketing-budget" value="0" step="0.5" min="0" max="5">
+                        <input type="number" id="marketing-budget" value="0" step="0.5" min="0" max="5"
+                               inputmode="decimal" pattern="[0-9.]*"
+                               aria-label="Marketing-Budget in Millionen Euro">
                     </div>
                     <small class="input-hint">Erhöht die Nachfrage</small>
                 </div>
@@ -1130,7 +1629,9 @@
                         Rohmaterial Einkauf
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="material-purchase" value="2" step="1" min="0" max="10">
+                        <input type="number" id="material-purchase" value="2" step="1" min="0" max="10"
+                               inputmode="numeric" pattern="[0-9]*"
+                               aria-label="Rohmaterial Einkauf in Losen">
                     </div>
                     <small class="input-hint">Anzahl Lose</small>
                 </div>
@@ -1141,7 +1642,9 @@
                         Produktionsmenge
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="production-lots" value="2" step="1" min="1" max="5">
+                        <input type="number" id="production-lots" value="2" step="1" min="1" max="5"
+                               inputmode="numeric" pattern="[0-9]*"
+                               aria-label="Produktionsmenge in Losen">
                     </div>
                     <small class="input-hint">Anzahl zu produzierende Lose</small>
                 </div>
@@ -1152,7 +1655,9 @@
                         Materialpreis-Faktor
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="material-factor" value="1.0" step="0.1" min="0.5" max="2.0">
+                        <input type="number" id="material-factor" value="1.0" step="0.1" min="0.5" max="2.0"
+                               inputmode="decimal" pattern="[0-9.]*"
+                               aria-label="Materialpreis-Faktor">
                     </div>
                     <small class="input-hint">1.0 = normal, 1.2 = +20%</small>
                 </div>
@@ -1163,30 +1668,34 @@
                         Gemeinkosten-Faktor
                     </label>
                     <div class="input-wrapper">
-                        <input type="number" id="overhead-factor" value="1.0" step="0.1" min="0.5" max="2.0">
+                        <input type="number" id="overhead-factor" value="1.0" step="0.1" min="0.5" max="2.0"
+                               inputmode="decimal" pattern="[0-9.]*"
+                               aria-label="Gemeinkosten-Faktor">
                     </div>
                     <small class="input-hint">1.0 = 6.0 M, 1.5 = 9.0 M</small>
                 </div>
             </div>
             
-            <!-- Action Buttons -->
-            <div class="button-group">
-                <button class="btn btn-primary" id="start-btn" onclick="startGame()">
-                    <span class="btn-icon">🎮</span>
-                    Spiel Starten
-                </button>
-                <button class="btn btn-primary" id="simulate-btn" onclick="simulateQuarter()" style="display:none;">
-                    <span class="btn-icon">▶️</span>
-                    Quartal Simulieren
-                </button>
-                <button class="btn btn-success" id="export-btn" onclick="exportResults()" style="display:none;">
-                    <span class="btn-icon">📥</span>
-                    Excel Export
-                </button>
-                <button class="btn btn-danger" id="reset-btn" onclick="resetGame()">
-                    <span class="btn-icon">🔄</span>
-                    Neues Spiel
-                </button>
+            <!-- Action Buttons - PHASE 2: Made Sticky -->
+            <div class="action-bar-sticky" id="actionBar">
+                <div class="button-group">
+                    <button class="btn btn-primary" id="start-btn" onclick="startGame()">
+                        <span class="btn-icon">🎮</span>
+                        Spiel Starten
+                    </button>
+                    <button class="btn btn-primary" id="simulate-btn" onclick="simulateQuarter()" style="display:none;">
+                        <span class="btn-icon">▶️</span>
+                        Quartal Simulieren
+                    </button>
+                    <button class="btn btn-success" id="export-btn" onclick="exportResults()" style="display:none;">
+                        <span class="btn-icon">📥</span>
+                        Excel Export
+                    </button>
+                    <button class="btn btn-danger" id="reset-btn" onclick="resetGame()">
+                        <span class="btn-icon">🔄</span>
+                        Neues Spiel
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -2364,6 +2873,243 @@
         
         // Initialize
         updateProgress(0);
+
+        /* ============================================
+           PHASE 2: SCROLL TO TOP FUNCTIONALITY
+           ============================================ */
+
+        // Scroll to top button visibility
+        window.addEventListener('scroll', function() {
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            const actionBar = document.getElementById('actionBar');
+
+            // Show/hide scroll to top button
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+
+            // Add shadow to action bar when scrolled
+            if (window.pageYOffset > 50) {
+                actionBar.classList.add('scrolled');
+            } else {
+                actionBar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        /* ============================================
+           PHASE 2: KEYBOARD SHORTCUTS
+           ============================================ */
+
+        // Show keyboard hint on first interaction
+        let keyboardHintShown = false;
+
+        document.addEventListener('keydown', function(e) {
+            // Show hint on first Alt key press
+            if (e.altKey && !keyboardHintShown) {
+                const hint = document.getElementById('keyboardHint');
+                hint.classList.add('visible');
+                setTimeout(() => {
+                    hint.classList.remove('visible');
+                }, 5000);
+                keyboardHintShown = true;
+            }
+
+            // Alt+S: Start/Simulate
+            if (e.altKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                const startBtn = document.getElementById('start-btn');
+                const simulateBtn = document.getElementById('simulate-btn');
+
+                if (startBtn.style.display !== 'none') {
+                    startBtn.click();
+                } else if (simulateBtn.style.display !== 'none') {
+                    simulateBtn.click();
+                }
+                showAlert('⌨️ Tastenkürzel verwendet!', 'info');
+            }
+
+            // Alt+E: Export
+            if (e.altKey && e.key.toLowerCase() === 'e') {
+                e.preventDefault();
+                const exportBtn = document.getElementById('export-btn');
+                if (exportBtn.style.display !== 'none') {
+                    exportBtn.click();
+                    showAlert('⌨️ Exportiere Ergebnisse...', 'info');
+                }
+            }
+
+            // Alt+R: Reset
+            if (e.altKey && e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                document.getElementById('reset-btn').click();
+            }
+
+            // Escape: Close keyboard hint
+            if (e.key === 'Escape') {
+                document.getElementById('keyboardHint').classList.remove('visible');
+            }
+        });
+
+        /* ============================================
+           PHASE 2: ERROR HANDLING ENHANCEMENT
+           ============================================ */
+
+        // Enhanced error display with retry
+        let lastAction = null;
+
+        function showError(message, canRetry = false) {
+            const errorHtml = `
+                <div class="card">
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Ups, etwas ist schiefgelaufen</h3>
+                        <p>${message}</p>
+                        ${canRetry ? '<button class="btn btn-primary" onclick="retryLastAction()"><span class="btn-icon">🔄</span>Erneut versuchen</button>' : ''}
+                    </div>
+                </div>
+            `;
+
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.innerHTML = errorHtml + resultsSection.innerHTML;
+
+            // Auto-dismiss after 10 seconds
+            setTimeout(() => {
+                const errorStates = document.querySelectorAll('.error-state');
+                errorStates.forEach(state => {
+                    if (state.parentElement) {
+                        state.parentElement.style.opacity = '0';
+                        setTimeout(() => state.parentElement.remove(), 300);
+                    }
+                });
+            }, 10000);
+        }
+
+        function retryLastAction() {
+            if (lastAction) {
+                lastAction();
+            }
+        }
+
+        /* ============================================
+           PHASE 2: EMPTY STATE FOR RESULTS
+           ============================================ */
+
+        function showEmptyState() {
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.innerHTML = `
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎮</div>
+                        <h3>Bereit zum Spielen?</h3>
+                        <p>Klicken Sie auf "Spiel Starten", um Ihre Factory-Simulation zu beginnen.<br>
+                        Treffen Sie kluge Entscheidungen und maximieren Sie Ihren Gewinn!</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* ============================================
+           PHASE 2: ENHANCED LOADING WITH STATUS
+           ============================================ */
+
+        let loadingStatus = '';
+
+        function showLoadingWithStatus(status) {
+            loadingStatus = status;
+            showLoading();
+
+            // Update screen reader text
+            const srText = document.querySelector('#loading span');
+            if (srText) {
+                srText.textContent = status + ', bitte warten...';
+            }
+        }
+
+        /* ============================================
+           PHASE 2: SMOOTH SCROLL TO RESULTS
+           ============================================ */
+
+        function scrollToResults() {
+            const resultsSection = document.getElementById('results-section');
+            if (resultsSection && resultsSection.children.length > 0) {
+                setTimeout(() => {
+                    resultsSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 300);
+            }
+        }
+
+        /* ============================================
+           PHASE 2: INITIALIZATION
+           ============================================ */
+
+        // Show keyboard hint after 3 seconds on desktop
+        if (window.innerWidth > 768) {
+            setTimeout(() => {
+                const hint = document.getElementById('keyboardHint');
+                hint.classList.add('visible');
+                setTimeout(() => {
+                    hint.classList.remove('visible');
+                }, 4000);
+            }, 3000);
+        }
+
+        // Show empty state initially
+        window.addEventListener('load', function() {
+            if (currentQuarter === 0 && allResults.length === 0) {
+                showEmptyState();
+            }
+        });
+
+        /* ============================================
+           PHASE 2: ENHANCED SIMULATE QUARTER
+           ============================================ */
+
+        // Store original function
+        const originalSimulateQuarter = simulateQuarter;
+
+        // Override with enhanced version
+        simulateQuarter = async function() {
+            lastAction = simulateQuarter;
+            showLoadingWithStatus('Quartal wird simuliert');
+
+            try {
+                await originalSimulateQuarter();
+                scrollToResults();
+            } catch (error) {
+                showError('Fehler bei der Simulation: ' + error.message, true);
+            }
+        };
+
+        // Store original start game
+        const originalStartGame = startGame;
+
+        // Override with enhanced version
+        startGame = async function() {
+            lastAction = startGame;
+            showLoadingWithStatus('Spiel wird gestartet');
+
+            try {
+                await originalStartGame();
+            } catch (error) {
+                showError('Fehler beim Starten: ' + error.message, true);
+            }
+        };
+
+        console.log('✅ Phase 2 UI/UX Features loaded successfully!');
+        console.log('📌 Keyboard shortcuts: Alt+S (Start/Simulate), Alt+E (Export), Alt+R (Reset)');
     </script>
 </body>
 </html>
