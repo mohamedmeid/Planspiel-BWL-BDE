@@ -382,7 +382,7 @@ class FactorySimulator:
 def run_interactive_game():
     """Run interactive game session"""
     print("\n" + "="*60)
-    print("FACTORY BUSINESS SIMULATION - INTERAKTIVE VERSION")
+    print("TECHGEAR SOLUTIONS GMBH - INTERAKTIVE SIMULATION")
     print("mit Abschreibungen, Zinsen und Steuern")
     print("Planspiel BWL für BDE - WiSe 2025/26")
     print("="*60 + "\n")
