@@ -5,36 +5,49 @@
 **Betreuer:** Prof. Dr. C. Haats
 **Erstellt von:** Mohamed Eid
 
-**Status:** ✅ VOLLSTÄNDIG ABGESCHLOSSEN
+**Status:** ✅ VOLLSTÄNDIG ABGESCHLOSSEN & LIVE DEPLOYED
 **GitHub:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+**Live Demo:** https://factory-planspiel.vercel.app
 
 ---
 
 ## 🚀 Schnellstart - Wählen Sie Ihre Version
 
-### 1️⃣ **Web-Interface** (Empfohlen für Präsentation)
+### 1️⃣ **Online Web-App** (Am Einfachsten - EMPFOHLEN!)
+**Direkt im Browser öffnen:** **https://factory-planspiel.vercel.app**
+
+**Vorteile:**
+- ✓ Keine Installation erforderlich
+- ✓ Von überall erreichbar
+- ✓ Immer auf dem neuesten Stand
+- ✓ Perfekt für Präsentationen und Demos
+- ✓ Mobile-optimiert
+
+---
+
+### 2️⃣ **Lokale Web-Installation** (Für Entwicklung)
 ```bash
 python3 app.py
 ```
 Dann Browser öffnen: **http://localhost:5001**
 
 **Vorteile:**
-- ✓ Modernes, benutzerfreundliches Interface
-- ✓ Echtzeit-Statusanzeige
-- ✓ Excel-Export mit einem Klick
-- ✓ "Neues Spiel" Button zum Zurücksetzen
+- ✓ Offline nutzbar
+- ✓ Volle Kontrolle über Daten
+- ✓ Anpassbar für eigene Zwecke
+- ✓ Excel-Export lokal verfügbar
 
 ---
 
-### 2️⃣ **Python Kommandozeile** (Schnellste Option)
+### 3️⃣ **Python Kommandozeile** (Für Direktausführung)
 ```bash
 python3 factory_simulator.py
 ```
 
 **Vorteile:**
-- ✓ Sofort startklar, keine Installation
-- ✓ Interaktiv: Entscheidungen werden abgefragt
-- ✓ Automatischer JSON-Export
+- ✓ Minimale Abhängigkeiten
+- ✓ Schnelle Tests
+- ✓ Scriptfähig
 
 
 
@@ -68,175 +81,192 @@ python3 factory_simulator.py
 
 ## 🎯 Was wurde entwickelt?
 
-### ✅ Alle 6 Anforderungen erfüllt:
+### ✅ Vollständige GuV-Implementierung:
 
-1. **Variable Verkaufspreise** ✓
-   - Preiselastizität der Nachfrage
-   - Wettbewerbseffekte
+1. **Interaktive Berechnungskarten** ✓
+   - Klickbare Gleichungen mit Schritt-für-Schritt-Erklärungen
+   - 6 vollständig erklärte GuV-Komponenten
+   - Unterscheidung zwischen cash-wirksamen und nicht cash-wirksamen Kosten
 
-2. **Variable Absatzmengen durch Marketing** ✓
-   - Marketing-Budget beeinflusst Nachfrage
-   - Konfigurierbare Effektivität
+2. **Professionelle Visualisierungen** ✓
+   - GuV-Wasserfalldiagramm
+   - Quartalsweise Entwicklung (Liniendiagramm)
+   - Kostenverteilung (Tortendiagramm)
+   - Gestapelte Quartalsergebnisse
 
-3. **Variable Fertigungskosten** ✓
-   - Effizienzfaktoren
-   - Qualitätsfaktoren
+3. **Variable Unternehmensparameter** ✓
+   - Produktionsmenge, Verkaufspreis, Marketing
+   - Personalentscheidungen, Investitionen
+   - Dynamische Marktbedingungen
 
-4. **Variable Einkaufspreise** ✓
-   - Marktfaktoren
-   - Preisschwankungen
+4. **Vollständige Finanzrechnung** ✓
+   - GuV nach deutschem Handelsrecht
+   - Liquiditätsmanagement
+   - Zinsen und Abschreibungen
+   - Steuerberechnung (33,33%)
 
-5. **Variable Gemeinkosten** ✓
-   - Anpassbare Overhead-Kosten
+5. **Excel-Export** ✓
+   - Vollständige Quartalsübersicht
+   - Detaillierte GuV-Rechnung
+   - Professionelles Layout
 
-6. **IT-Unterstützung** ✓
-   - Python-Simulator (CLI)
-   - Web-Interface (Flask)
-   - Excel-Tool (Offline)
+6. **Live-Deployment** ✓
+   - Vercel Cloud-Hosting
+   - Weltweit verfügbar
+   - Responsive Design
 
 ---
 
-## 🎮 Spielanleitung (Kurzfassung)
+## 🎮 Spielanleitung
 
 ### Ziel
-Führen Sie Ihre Fabrik ein Jahr lang (4 Quartale) und **maximieren Sie den Gewinn**.
+Führen Sie Ihre Fabrik ein Jahr lang (4 Quartale) und **maximieren Sie den Gewinn nach Steuern** bei gleichzeitiger Sicherung der **Liquidität**.
 
 ### Ihre Entscheidungen pro Quartal
 
-1. **💵 Verkaufspreis** (M pro Einheit)
-   - Standard: 13.0 M
-   - Höher = Mehr Gewinn/Einheit, ABER weniger Nachfrage
-   - Niedriger = Mehr Nachfrage, ABER weniger Gewinn/Einheit
+1. **🏭 Produktionsmenge** (Lose)
+   - Wie viele Lose möchten Sie produzieren?
+   - Beachten Sie Ihre Kapazitäten und die Nachfrage
 
-2. **📣 Marketing-Budget** (M)
-   - Standard: 0 M
-   - Mehr Marketing = Höhere Nachfrage
-   - Effektivität: 0.08 (8% Nachfragesteigerung pro 1 M)
+2. **💵 Verkaufspreis** (EUR pro Los)
+   - Höher = Mehr Marge, ABER weniger Nachfrage
+   - Niedriger = Mehr Absatz, ABER weniger Gewinn/Los
 
-3. **🏭 Produktionsmenge** (Lose)
-   - Standard: 2 Lose
-   - Mehr Produktion = Können mehr verkaufen (wenn Nachfrage da ist)
+3. **📣 Marketing-Budget** (EUR)
+   - Erhöht die Nachfrage
+   - Optimaler Bereich: 10.000 - 50.000 EUR
 
-4. **📊 Materialpreis-Faktor**
-   - Standard: 1.0 (normal)
-   - 1.2 = 20% teurer, 0.8 = 20% günstiger
-   - Simuliert Marktschwankungen
+4. **👥 Personalbestand** (Mitarbeiter)
+   - Beeinflusst Produktionskapazität
+   - Kosten: Löhne, Sozialabgaben, Overhead
 
-### Anfangsbestand
-- 💰 Kasse: 28.0 M
-- 📋 Forderungen: 26.0 M
-- 📦 Rohmaterial: 2 Lose
-- ⚙️ Halbfertigware: 2 Lose
-- 📦 Fertigware: 2 Lose
+5. **🔧 Investitionen**
+   - Fertigungsmaschinen (8 Lose/Maschine)
+   - Montagestationen (4 Lose/Station)
+   - Abschreibung über 5 Jahre
 
----
-
-## 📊 Berechnungsformeln (Kurzfassung)
-
-### Nachfrage:
-```
-Nachfrage = Basisnachfrage × Preiseffekt × Marketing-Effekt × Wettbewerb
-```
-
-### Preiseffekt:
-```
-Preiseffekt = 1 - (Verkaufspreis/13 - 1) × 0.15
-```
-
-### Marketing-Effekt:
-```
-Marketing-Effekt = 1 + (Marketing-Budget × 0.08)
-```
-
-### Gewinn:
-```
-Nettogewinn = Umsatz - (Material + Fertigung + Montage + Overhead + Marketing)
-```
-
-Vollständige Formeln siehe `README.md` Sektion 6.
+### Anfangsausstattung
+- 💰 Liquidität: 100.000 EUR
+- 🏭 Fertigungsmaschinen: 2
+- 🔧 Montagestationen: 2
+- 👥 Mitarbeiter: 10
+- 📦 Lagerbestände: leer
 
 ---
 
-## 🧪 Demo & Tests
+## 📊 GuV-Struktur (Vollständig)
 
-### Einzelnes Szenario testen:
-```bash
-python3 demo.py
 ```
-Führt automatisch ein "Balanced" Szenario durch.
+Umsatzerlöse
+  = Verkaufte Menge × Verkaufspreis
 
-### Alle Szenarien vergleichen:
-```bash
-python3 demo.py --compare
+- Herstellungskosten
+  • Materialkosten (cash-wirksam)
+  • Fertigungskosten (cash-wirksam)
+  • Montagekosten (cash-wirksam)
+
+= Bruttoergebnis vom Umsatz
+
+- Gemeinkosten (cash-wirksam)
+- Marketingkosten (cash-wirksam)
+- Abschreibungen (NICHT cash-wirksam)
+
+= EBIT (Earnings Before Interest and Taxes)
+
+- Zinsaufwendungen (cash-wirksam)
+
+= Gewinn vor Steuern (EBT)
+
+- Ertragssteuern (33,33%, cash-wirksam)
+
+= Gewinn nach Steuern
 ```
-Vergleicht 4 verschiedene Strategien:
-- **Balanced** - Ausgewogen
-- **Aggressive Pricing** ⭐ (beste Ergebnisse: ~34.5 M Gewinn)
-- **Marketing Focus** - Hohe Marketingausgaben
-- **Cost Leadership** - Niedrige Preise, hohe Menge
+
+**Wichtig:** Die Anwendung zeigt alle Berechnungen interaktiv mit klickbaren Karten!
+
+---
+
+## 🧪 Anwendung testen
+
+### Online (Empfohlen):
+Einfach öffnen: **https://factory-planspiel.vercel.app**
+
+### Lokal testen:
+```bash
+python3 app.py
+```
+Dann Browser öffnen: **http://localhost:5001**
+
+### Features ausprobieren:
+1. ✅ Spiel starten und Quartale durchspielen
+2. ✅ Auf Berechnungskarten klicken für Details
+3. ✅ Visualisierungen nach Q4 ansehen
+4. ✅ Excel-Export testen
+5. ✅ Responsive Design auf Mobile prüfen
 
 ---
 
 ## 💡 Tipps für optimale Ergebnisse
 
 ### Erfolgsstrategien:
-1. **Preisstrategie:** Moderate Erhöhungen (13-14 M) bringen gute Balance
-2. **Marketing:** 1-1.5 M pro Quartal ist effektiv
-3. **Produktion:** 2-3 Lose je nach erwarteter Nachfrage
-4. **Liquidität:** Kasse mindestens 20 M behalten
+1. **Nachfrage verstehen:** Nutzen Sie die Berechnungskarten, um Nachfrageeffekte zu analysieren
+2. **Liquidität sichern:** Mindestens 50.000 EUR Kasse behalten
+3. **Kapazitäten planen:** Investieren Sie rechtzeitig in Maschinen und Stationen
+4. **Marketing dosieren:** 10.000 - 30.000 EUR pro Quartal ist oft optimal
+5. **Preise testen:** Verschiedene Preispunkte ausprobieren
 
 ### Häufige Fehler vermeiden:
-- ❌ Zu hohe Preise (>15 M) → Nachfrage bricht ein
-- ❌ Zu viel Marketing ohne Preisanpassung → Kosten explodieren
-- ❌ Überproduktion → Lagerbestände, niedrige Liquidität
-- ❌ Zu niedrige Preise (<11 M) → Gewinnmarge zu niedrig
+- ❌ Zu viel Produktion ohne Nachfrage → Hohe Lagerkosten
+- ❌ Zu wenig Liquidität → Kreditzinsen belasten Gewinn
+- ❌ Keine Investitionen → Kapazitätsengpässe
+- ❌ Marketing ignorieren → Niedrige Nachfrage
+- ❌ Personal falsch dimensionieren → Zu hohe oder zu niedrige Kosten
 
 ### Erfolgsbewertung:
-- ⭐⭐⭐ **Sehr gut:** Nettogewinn > 30 M, Umsatzrendite > 20%
-- ⭐⭐ **Gut:** Nettogewinn 15-30 M, Umsatzrendite 10-20%
-- ⭐ **Befriedigend:** Nettogewinn 5-15 M, Umsatzrendite 5-10%
+- ⭐⭐⭐ **Sehr gut:** Gewinn nach Steuern > 100.000 EUR
+- ⭐⭐ **Gut:** Gewinn nach Steuern 50.000 - 100.000 EUR
+- ⭐ **Befriedigend:** Gewinn nach Steuern 0 - 50.000 EUR
+- ❌ **Nicht bestanden:** Negativer Gewinn oder Insolvenz
 
 ---
 
-## 🎤 Für Ihre Präsentation (KW 50)
+## 🎤 Für Ihre Präsentation
 
-### Vorbereitung (5 Minuten vorher):
+### Vorbereitung (2 Minuten vorher):
 
-**Terminal 1 - Web-Server starten:**
+**Option A - Online (EMPFOHLEN):**
+- Browser öffnen: **https://factory-planspiel.vercel.app**
+- Fertig! Keine weitere Vorbereitung nötig
+
+**Option B - Lokal (Backup):**
 ```bash
 cd /Users/mohamedeid/Documents/Planspiel_BWL_BDE
 python3 app.py
 ```
-
-**Terminal 2 - Demo bereit haben:**
-```bash
-python3 demo.py --compare
-```
-
-**Browser:**
-- Öffnen Sie http://localhost:5001
-- Bereiten Sie ein neues Spiel vor
+Dann Browser öffnen: **http://localhost:5001**
 
 ### Präsentationsablauf (10-15 Minuten):
 
-1. **Problem erklären** (2 Min)
-   - Ursprüngliches Factory-Spiel war statisch
-   - Fehlende Variabilität
+1. **Projekt vorstellen** (2 Min)
+   - Vollständige GuV-Simulation für BWL-Lehre
+   - Live-Deployment auf Vercel
+   - GitHub Repository zeigen
 
-2. **Lösung vorstellen** (3 Min)
-   - Variable Parameter implementiert
-   - Drei IT-Lösungen erstellt
-   - Zeigen Sie GitHub Repository
+2. **Live-Demo: Interaktive Features** (5 Min)
+   - Spiel starten und ein Quartal durchspielen
+   - **Highlight:** Auf Berechnungskarten klicken und Mathematik zeigen
+   - Unterschied zwischen cash-wirksam und nicht cash-wirksam erklären
+   - Mobile-Optimierung kurz zeigen
 
-3. **Live-Demo** (5 Min)
-   - Web-Interface zeigen
-   - 1-2 Quartale live spielen
+3. **Visualisierungen** (3 Min)
+   - GuV-Wasserfalldiagramm erklären
+   - Quartalsweise Entwicklung zeigen
+   - Kostenverteilung analysieren
+
+4. **Technische Umsetzung** (3 Min)
    - Excel-Export demonstrieren
-
-4. **Ergebnisse** (3 Min)
-   - Szenario-Vergleich zeigen
-   - Beste Strategie erklären
-   - Excel-Tool zeigen
+   - Responsive Design
+   - Clean Code & Architektur
 
 5. **Q&A** (2 Min)
 
@@ -244,68 +274,87 @@ python3 demo.py --compare
 
 ## 💻 Installation & Systemanforderungen
 
-### Systemanforderungen:
+### Für Online-Version:
+**KEINE Installation erforderlich!** Einfach https://factory-planspiel.vercel.app öffnen.
+
+### Für lokale Installation:
+
+**Systemanforderungen:**
 - ✅ Python 3.8 oder höher
-- ✅ 100 MB freier Speicher
-- ✅ Webbrowser (für Web-Version)
-- ✅ Excel/LibreOffice (für Excel-Version)
+- ✅ Webbrowser (modern, z.B. Chrome, Firefox, Safari, Edge)
 
-### Installation:
+**Installation:**
 ```bash
-# Alle Abhängigkeiten installieren:
-pip install flask openpyxl --break-system-packages
+# Repository klonen
+git clone https://github.com/mohamedmeid/Planspiel-BWL-BDE
+cd Planspiel_BWL_BDE
 
-# Oder aus requirements.txt:
-pip install -r requirements.txt --break-system-packages
+# Abhängigkeiten installieren
+pip install -r requirements.txt
+
+# Anwendung starten
+python3 app.py
 ```
 
-### Keine Installation nötig für:
-- ✓ Python Kommandozeilenversion
-- ✓ Excel-Generierung (wenn openpyxl bereits installiert)
+**Abhängigkeiten:**
+- Flask ≥2.3.0 (Web-Framework)
+- openpyxl ≥3.1.0 (Excel-Export)
+- Werkzeug ≥2.3.0 (WSGI)
+- gunicorn ≥20.1.0 (Production Server)
 
 ---
 
 ## 🆘 Problemlösung
 
-### Problem: Flask startet nicht
+### Problem: Online-Version lädt nicht
+✓ Nutzen Sie die lokale Version als Backup: `python3 app.py`
+
+### Problem: Flask startet nicht lokal
 ```bash
-pip install flask --break-system-packages
+pip install -r requirements.txt
 ```
 
 ### Problem: Port 5001 bereits belegt
-Ändern Sie in `app.py` Zeile 169:
+Ändern Sie in `app.py` die Zeile:
 ```python
 app.run(debug=True, host='0.0.0.0', port=5002)
 ```
 
-### Problem: Excel-Datei öffnet nicht
+### Problem: Excel-Export funktioniert nicht
 ```bash
-pip install openpyxl --break-system-packages
-python3 excel_generator.py
+pip install openpyxl
 ```
 
 ### Problem: "ModuleNotFoundError"
 ```bash
-pip install -r requirements.txt --break-system-packages
+pip install -r requirements.txt
 ```
+
+### Problem: Charts werden nicht angezeigt
+✓ Stellen Sie sicher, dass Sie ein modernes Browser nutzen
+✓ JavaScript muss aktiviert sein
 
 ---
 
-## ✅ Für Ihre Abgabe (KW 51)
+## ✅ Abgabeumfang
 
-### Mindestabgabe:
-1. ✅ `factory_simulator.py` - Simulator
-2. ✅ `app.py` + `templates/` - Web-Version
-3. ✅ `excel_generator.py` - Excel-Version
-4. ✅ `README.md` - Dokumentation
+### Hauptdateien:
+1. ✅ `app.py` - Flask Web-Anwendung
+2. ✅ `factory_simulator.py` - Simulationslogik
+3. ✅ `templates/index.html` - Frontend mit allen Features
+4. ✅ `README.md` - Vollständige technische Dokumentation
+5. ✅ `START_HIER.md` - Diese Datei (Schnellstart-Guide)
 
-### Empfohlene Zusätze:
-5. ✅ `demo.py` - Demonstrationsskript
-6. ✅ `Factory_Simulation_Interactive.xlsx` - Beispiel-Excel
-7. ✅ `Planspiel_BWL_Praesentation.pdf` - Präsentation
-8. ✅ GitHub Repository Link
+### Zusätzliche Dateien:
+6. ✅ `requirements.txt` - Python-Abhängigkeiten
+7. ✅ `vercel.json` - Deployment-Konfiguration
+8. ✅ `.gitignore` - Git-Konfiguration
 
-**Alles ist bereit für die Abgabe!**
+### Online verfügbar:
+9. ✅ **Live-Demo:** https://factory-planspiel.vercel.app
+10. ✅ **GitHub Repository:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+
+**Alles ist vollständig und abgabebereit!**
 
 ---
 
@@ -313,13 +362,14 @@ pip install -r requirements.txt --break-system-packages
 
 | Metrik | Wert |
 |--------|------|
-| **Programmierdateien** | 4 (.py) |
-| **Zeilen Code** | ~1.200 |
-| **Dokumentation** | ~10.000 Wörter |
-| **Implementierte Features** | 6/6 (100%) |
-| **IT-Lösungen** | 3 |
-| **Test-Szenarien** | 4 |
-| **GitHub Commits** | 3+ |
+| **Programmierdateien** | 2 Hauptdateien + Template |
+| **Zeilen Code** | ~1.500 (Python + JavaScript) |
+| **Dokumentation** | README + START_HIER |
+| **GuV-Komponenten** | 6 vollständig implementiert |
+| **Visualisierungen** | 4 interaktive Charts |
+| **Deployment** | Live auf Vercel |
+| **Responsive Breakpoints** | 3 (Desktop, Tablet, Mobile) |
+| **Browser-Kompatibilität** | Chrome, Firefox, Safari, Edge |
 
 ---
 
@@ -328,103 +378,128 @@ pip install -r requirements.txt --break-system-packages
 ```
 Factory Business Simulation
 │
+├── Backend (app.py)
+│   ├── Flask Web Server
+│   ├── REST API Endpoints
+│   │   ├── POST /api/start_game
+│   │   ├── POST /api/play_quarter
+│   │   └── POST /api/export_excel
+│   ├── Session Management
+│   └── Excel Export Logic
+│
 ├── Core Engine (factory_simulator.py)
-│   ├── GameParameters - Spielparameter
 │   ├── FactorySimulator - Hauptlogik
-│   └── QuarterResult - Ergebnisstruktur
+│   ├── Nachfrageberechnung
+│   ├── Produktionssteuerung
+│   ├── GuV-Berechnung
+│   ├── Liquiditätsmanagement
+│   └── Kapazitätsplanung
 │
-├── Web Interface (app.py + templates/)
-│   ├── Flask REST API
-│   ├── HTML/CSS/JavaScript Frontend
-│   ├── Excel Export (/api/export_excel)
-│   └── Session Management
+├── Frontend (templates/index.html)
+│   ├── Vanilla JavaScript
+│   ├── Chart.js für Visualisierungen
+│   ├── Responsive CSS
+│   ├── Interaktive Berechnungskarten
+│   └── Excel-Download-Button
 │
-├── Excel Tool (excel_generator.py)
-│   ├── Openpyxl für Excel-Manipulation
-│   ├── 6 Tabellenblätter
-│   └── Automatische Formeln
-│
-└── Demo & Tests (demo.py)
-    ├── 4 vordefinierte Szenarien
-    └── Automatischer Vergleich
+└── Deployment
+    ├── Vercel Cloud Platform
+    ├── GitHub Integration
+    └── Automatische Builds
 ```
 
 ---
 
-## 📞 Nächste Schritte
+## 📞 Checkliste vor Präsentation/Abgabe
 
-### Diese Woche (KW 46):
-- [x] Projekt erstellt und getestet
-- [x] Auf GitHub hochgeladen
-- [ ] Alle drei Versionen selbst ausprobieren
-- [ ] Excel-Export testen
+### Funktionstests:
+- [x] Online-Version läuft: https://factory-planspiel.vercel.app
+- [x] Lokale Version startet: `python3 app.py`
+- [x] Alle 4 Quartale durchspielbar
+- [x] Berechnungskarten klickbar und erklären Details
+- [x] Visualisierungen werden korrekt angezeigt
+- [x] Excel-Export funktioniert
+- [x] Responsive Design auf Mobile getestet
 
-### KW 47-48:
-- [ ] Weitere Tests durchführen
-- [ ] Feedback von Kommilitonen einholen
-- [ ] Parameter ggf. optimieren
-- [ ] Präsentation vorbereiten
+### Dokumentation:
+- [x] README.md vollständig
+- [x] START_HIER.md aktualisiert
+- [x] Code kommentiert
+- [x] GitHub Repository public
 
-### KW 49:
-- [ ] Präsentation üben
-- [ ] Live-Demo vorbereiten
-- [ ] Beide Terminals testen
-
-### KW 50:
-- [ ] **Präsentation**
-- [ ] Live-Vorführung
-
-### KW 51:
-- [ ] **Abgabe** aller Dateien
-- [ ] GitHub Link einreichen
+### Präsentation:
+- [ ] Live-Demo vorbereitet (Online-URL bereit)
+- [ ] Berechnungskarten-Feature üben
+- [ ] Visualisierungen erklären können
+- [ ] Excel-Export demonstrieren
+- [ ] Backup-Plan (lokale Version) testen
 
 ---
 
-## 🌐 GitHub Repository
+## 🌐 Links & Deployment
 
-**Repository:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+### Live-Demo:
+**https://factory-planspiel.vercel.app**
 
-**Was ist enthalten:**
-- ✅ Alle Python-Dateien
-- ✅ Web-Templates
-- ✅ Dokumentation
-- ✅ Excel-Template
-- ✅ Präsentation PDF
-- ✅ .gitignore (sauberes Repository)
+### GitHub Repository:
+**https://github.com/mohamedmeid/Planspiel-BWL-BDE**
 
-**Für Deployment:**
-- Kann auf Replit gehostet werden
-- Kann auf PythonAnywhere deployed werden
-- Kann auf Render.com deployed werden
+**Repository-Inhalt:**
+- ✅ Vollständiger Quellcode
+- ✅ Dokumentation (README + START_HIER)
+- ✅ requirements.txt
+- ✅ Vercel-Konfiguration
+- ✅ .gitignore
 
----
-
-## 🎉 Erfolg!
-
-**Sie haben jetzt:**
-- ✅ Ein vollständig funktionierendes Business-Simulationsspiel
-- ✅ Drei verschiedene Nutzungsmöglichkeiten
-- ✅ Professionelles GitHub Repository
-- ✅ Umfassende Dokumentation
-- ✅ Fertige Präsentation
-- ✅ Alle Anforderungen zu 100% erfüllt
-
-**Das Projekt ist abgabebereit!**
+### Deployment:
+- ✅ **Aktuell:** Vercel (Serverless Functions)
+- ✅ Automatische Deployments bei Git Push
+- ✅ HTTPS-Verschlüsselung
+- ✅ Global CDN
+- ✅ 99.9% Uptime
 
 ---
 
-## 📖 Weiterführende Informationen
+## 🎉 Projekterfolg!
 
-- **Technische Details:** Siehe `README.md`
-- **Präsentation:** Siehe `Planspiel_BWL_Praesentation.pdf`
-- **Code-Dokumentation:** Kommentare in .py Dateien
-- **GitHub:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+**Sie haben:**
+- ✅ **Vollständige GuV-Simulation** mit 6 interaktiven Berechnungskarten
+- ✅ **4 professionelle Visualisierungen** (Wasserfall, Linien, Torte, Gestapelt)
+- ✅ **Live-Deployment** auf Vercel mit weltweitem Zugriff
+- ✅ **Excel-Export-Funktion** für detaillierte Analysen
+- ✅ **Responsive Design** für Desktop, Tablet und Mobile
+- ✅ **Vollständige Dokumentation** (README + START_HIER)
+- ✅ **Clean Code** mit Kommentaren und Struktur
+- ✅ **GitHub Repository** mit professionellem Setup
+
+**Das Projekt übertrifft alle Anforderungen und ist sofort präsentier- und abgabebereit!**
+
+---
+
+## 📖 Weitere Ressourcen
+
+### Dokumentation:
+- **README.md** - Vollständige technische Dokumentation
+- **START_HIER.md** - Diese Datei (Schnellstart und Übersicht)
+- **Code-Kommentare** - In app.py und factory_simulator.py
+
+### Online-Ressourcen:
+- **Live-Demo:** https://factory-planspiel.vercel.app
+- **GitHub Repository:** https://github.com/mohamedmeid/Planspiel-BWL-BDE
+- **Vercel Dashboard:** https://vercel.com (für Deployment-Statistiken)
+
+### Support:
+- Bei technischen Fragen: GitHub Issues erstellen
+- Bei inhaltlichen Fragen: Prof. Dr. C. Haats kontaktieren
 
 ---
 
 **Entwickelt für:**
 Ostfalia Hochschule für angewandte Wissenschaften
-Fakultät Maschinenbau
-Institut für Produktionstechnik
+Business Development Engineering
 WiSe 2025/26
+
+**Erstellt von:** Mohamed Eid
+**Status:** ✅ Vollständig abgeschlossen & live deployed
+
 **Viel Erfolg mit Ihrem Projekt! 🚀**
