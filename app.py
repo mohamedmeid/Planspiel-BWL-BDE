@@ -472,9 +472,17 @@ def export_excel():
 
     ws_prod.column_dimensions['A'].width = 30
 
-    # Save file
-    exports_dir = os.path.join(os.getcwd(), 'exports')
-    os.makedirs(exports_dir, exist_ok=True)
+    # Save file (use /tmp for serverless compatibility)
+    # Check if running on serverless platform (Vercel, AWS Lambda, etc.)
+    is_serverless = os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME')
+
+    if is_serverless:
+        # Use /tmp directory on serverless platforms
+        exports_dir = '/tmp'
+    else:
+        # Use local exports directory for development
+        exports_dir = os.path.join(os.getcwd(), 'exports')
+        os.makedirs(exports_dir, exist_ok=True)
 
     filename = f"TechGear_Report_{game_id}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     filepath = os.path.join(exports_dir, filename)
