@@ -177,11 +177,26 @@ class FactorySimulator:
         # Use base price if not specified
         if sales_price is None:
             sales_price = self.params.base_sales_price
-        
-        # Calculate demand based on price and marketing
+
+        # Update inventory FIRST (production happens before sales in the quarter)
+        # Material: receive order, consume for production
+        self.raw_material_inventory += material_purchase_lots
+        self.raw_material_inventory -= production_lots
+
+        # WIP: produced - assembled
+        self.work_in_progress += production_lots
+        self.work_in_progress -= production_lots  # Moved to finished goods immediately
+
+        # Finished goods: add production
+        self.finished_goods_inventory += production_lots
+
+        # NOW calculate demand and sales based on UPDATED inventory
         sales_volume = self.calculate_demand(sales_price, marketing_budget)
-        sales_volume = min(sales_volume, self.finished_goods_inventory)  # Can't sell more than inventory
-        
+        sales_volume = min(sales_volume, self.finished_goods_inventory)  # Can't sell more than available
+
+        # Update finished goods: subtract sales
+        self.finished_goods_inventory -= sales_volume
+
         # Calculate revenues (Umsatzerlöse)
         sales_revenue = sales_volume * sales_price
         
@@ -232,22 +247,11 @@ class FactorySimulator:
         # Total operating costs (for cash flow calculation)
         # Cash outflows: Material, Production, Assembly, Overhead, Marketing, Interest, Tax
         # NOT Depreciation (no cash flow)
-        total_cash_costs = (material_cost + production_cost + assembly_cost + 
+        total_cash_costs = (material_cost + production_cost + assembly_cost +
                            overhead_cost + marketing_cost + interest + tax)
-        
-        # Update inventory
-        # Material: receive order, consume for production
-        self.raw_material_inventory += material_purchase_lots
-        self.raw_material_inventory -= production_lots
-        
-        # WIP: produced - assembled
-        self.work_in_progress += production_lots
-        self.work_in_progress -= production_lots  # Moved to finished goods
-        
-        # Finished goods: assembled - sold
-        self.finished_goods_inventory += production_lots
-        self.finished_goods_inventory -= sales_volume
-        
+
+        # Inventory was already updated at the beginning of the function
+
         # Update cash flow
         # Cash in: customer payments (previous quarter receivables)
         cash_in = self.accounts_receivable
