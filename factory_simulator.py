@@ -185,14 +185,20 @@ class FactorySimulator:
         # Calculate revenues (Umsatzerlöse)
         sales_revenue = sales_volume * sales_price
         
-        # Calculate costs
+        # Calculate costs for purchased/produced goods (cash outflows)
         material_cost = self.calculate_material_cost(material_purchase_lots, material_market_factor)
         production_cost = self.calculate_production_cost(production_lots)
         assembly_cost = production_lots * self.params.base_assembly_cost
-        
-        # Herstellungskosten = Material + Production + Assembly (for goods sold)
-        # Note: In the original game, this represents costs of goods sold
-        herstellungskosten = material_cost + production_cost + assembly_cost
+
+        # Herstellungskosten (Cost of Goods Sold) = Only for units SOLD, not produced
+        # Calculate unit cost
+        unit_material_cost = self.params.base_material_price * material_market_factor
+        unit_production_cost = self.params.base_production_cost * self.params.production_efficiency * self.params.quality_factor
+        unit_assembly_cost = self.params.base_assembly_cost
+        cost_per_lot = unit_material_cost + unit_production_cost + unit_assembly_cost
+
+        # COGS = units sold × cost per unit
+        herstellungskosten = sales_volume * cost_per_lot
         
         # Gemeinkosten (Overhead)
         overhead_cost = self.params.base_overhead_cost * overhead_factor
@@ -205,9 +211,9 @@ class FactorySimulator:
         # Calculate GuV structure
         # Bruttoergebnis = Umsatz - Herstellungskosten
         gross_profit = sales_revenue - herstellungskosten
-        
-        # Betriebsergebnis (EBIT) = Bruttoergebnis - Gemeinkosten - Abschreibungen
-        ebit = gross_profit - overhead_cost - depreciation
+
+        # Betriebsergebnis (EBIT) = Bruttoergebnis - Gemeinkosten - Marketing - Abschreibungen
+        ebit = gross_profit - overhead_cost - marketing_cost - depreciation
         
         # Zinsen (Interest) - CASH OUTFLOW
         interest = self.params.interest_per_quarter
